@@ -1,0 +1,13 @@
+[
+	{
+		"modid": "revolution",
+		"name": "Revolution",
+		"description": "Minecraft modding experiment in language, machine learning, and genetics.",
+		"version": "${version}",
+		"mcversion": "${mcversion}",
+		"credits": "",
+		"authorList": [
+			"Akrivus"
+		]
+	}
+]
