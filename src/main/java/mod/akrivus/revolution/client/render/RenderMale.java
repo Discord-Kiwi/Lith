@@ -8,12 +8,14 @@ import mod.akrivus.revolution.entity.EntityMale;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderBiped;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerBipedArmor;
 import net.minecraft.util.ResourceLocation;
 
 public class RenderMale extends RenderBiped<EntityMale> {
 	private static final ResourceLocation MALE_TEXTURE = new ResourceLocation("revolution:textures/entities/male/blank.png");
 	public RenderMale(RenderManager manager) {
 		super(manager, new ModelMale(), 0.25F);
+		this.addLayer(new LayerBipedArmor(this));
 		this.addLayer(new LayerSkin(this));
 		this.addLayer(new LayerEyes(this));
 		this.addLayer(new LayerHair(this));

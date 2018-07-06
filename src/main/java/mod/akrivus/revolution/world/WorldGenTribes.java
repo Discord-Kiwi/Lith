@@ -14,18 +14,26 @@ import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.IWorldGenerator;
 
 public class WorldGenTribes implements IWorldGenerator {
+	public static BlockPos lastGen = new BlockPos(0, 0, 0);
+	public static int lastDist = 0;
+	public WorldGenTribes() {
+		
+	}
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
 		if (world.provider.getDimensionType() == DimensionType.OVERWORLD) {
 			BlockPos pos = new BlockPos(chunkX * 16 + random.nextInt(16), random.nextInt(96) + 64, chunkZ * 16 + random.nextInt(16));
-			if (world.getBlockState(pos).isTopSolid()) {
-				int total = random.nextInt(6) + 6;
-				EntityHuman base = Humans.create(world, pos);
-				for (int count = 0; count < total; ++count) {
-					EntityHuman human = Humans.gen(base);
-					human.setPosition(pos.getX() + (random.nextInt(total) - 6), world.getTopSolidOrLiquidBlock(pos).getY() + 1, pos.getZ() + (random.nextInt(total) - 6));
-					human.onInitialSpawn(world.getDifficultyForLocation(pos), null);
-					world.spawnEntity(human);
+			if (pos.distanceSq(WorldGenTribes.lastGen) > Math.pow(WorldGenTribes.lastDist * 16, 2)) {
+				if (world.getBlockState(pos).isTopSolid()) {
+					EntityHuman base = Humans.create(world, pos);
+					WorldGenTribes.lastDist = random.nextInt(16) + 8;
+					WorldGenTribes.lastGen = pos;
+					for (int count = 0; count < WorldGenTribes.lastDist; ++count) {
+						EntityHuman human = Humans.gen(base, EntityHuman.class);
+						human.setPosition(pos.getX() + (random.nextInt(WorldGenTribes.lastDist) - 12), world.getTopSolidOrLiquidBlock(pos).getY() + 1, pos.getZ() + (random.nextInt(WorldGenTribes.lastDist) - 12));
+						human.onInitialSpawn(world.getDifficultyForLocation(pos), null);
+						world.spawnEntity(human);
+					}
 				}
 			}
 		}

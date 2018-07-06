@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.storage.WorldSavedData;
 import net.minecraftforge.common.util.Constants;
@@ -36,6 +37,13 @@ public class TribeData extends WorldSavedData {
 			NBTTagCompound nbt = new NBTTagCompound();
 			Entry<UUID, Tribe> pair = it.next();
 			nbt.setString("id", pair.getKey().toString());
+			nbt.setBoolean("homeless", pair.getValue().homeless);
+			nbt.setDouble("oldX", pair.getValue().oldHome.getX());
+			nbt.setDouble("oldY", pair.getValue().oldHome.getY());
+			nbt.setDouble("oldZ", pair.getValue().oldHome.getZ());
+			nbt.setDouble("homeX", pair.getValue().home.getX());
+			nbt.setDouble("homeY", pair.getValue().home.getY());
+			nbt.setDouble("homeZ", pair.getValue().home.getZ());
 			nbt.setString("name", pair.getValue().name);
 			list.appendTag(nbt);
 		}
@@ -48,8 +56,11 @@ public class TribeData extends WorldSavedData {
 		for (int i = 0; i < list.tagCount(); ++i) {
 			NBTTagCompound nbt = list.getCompoundTagAt(i);
 			UUID id = UUID.fromString(nbt.getString("id"));
-			String name = nbt.getString("name");
-			this.tribes.put(id, new Tribe(name));
+			Tribe tribe = new Tribe(nbt.getString("name"));
+			tribe.oldHome = new BlockPos(nbt.getDouble("oldX"), nbt.getDouble("oldY"), nbt.getDouble("oldZ"));
+			tribe.home = new BlockPos(nbt.getDouble("homeX"), nbt.getDouble("homeY"), nbt.getDouble("homeZ"));
+			tribe.homeless = nbt.getBoolean("homeless");
+			this.tribes.put(id, tribe);
 		}
 	}
 	public Tribe getTribe(UUID id) {

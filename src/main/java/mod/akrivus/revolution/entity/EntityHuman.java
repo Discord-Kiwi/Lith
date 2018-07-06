@@ -5,9 +5,16 @@ import java.util.UUID;
 
 import mod.akrivus.revolution.data.Tribe;
 import mod.akrivus.revolution.data.TribeData;
+import mod.akrivus.revolution.entity.ai.EntityAIBeAlert;
+import mod.akrivus.revolution.entity.ai.EntityAIFindHome;
+import mod.akrivus.revolution.entity.ai.EntityAIGoHome;
+import mod.akrivus.revolution.entity.ai.EntityAIRememberTarget;
 import mod.akrivus.revolution.lang.PhonicsHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
+import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
@@ -25,8 +32,8 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumDifficulty;
-import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
 public class EntityHuman extends EntityMob implements IAnimals {
@@ -39,6 +46,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected static final DataParameter<Integer> HAIR_TYPE = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
 	protected static final DataParameter<Integer> EYE_COLOR = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
 	protected static final DataParameter<Integer> SKIN_COLOR = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
+	
 	protected boolean canHairGray;
 	protected double immuneStrength;
 	protected double altitudeStrength;
@@ -49,11 +57,21 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected double ageFactor;
 	protected double foodLevels;
 	protected double sickness;
+	
 	protected UUID tribe;
 	protected InventoryBasic inventory;
+	
+	protected boolean isSleeping;
+	
 	public EntityHuman(World world) {
 		super(world);
 		this.setCanPickUpLoot(true);
+		this.tasks.addTask(0, new EntityAISwimming(this));
+		this.tasks.addTask(0, new EntityAIAttackMelee(this, 1.0F, false));
+		this.tasks.addTask(1, new EntityAIFindHome(this));
+		this.tasks.addTask(1, new EntityAIGoHome(this));
+		this.tasks.addTask(5, new EntityAIBeAlert(this, 12));
+		this.targetTasks.addTask(1, new EntityAIRememberTarget(this));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.dataManager.register(FIRST_NAME, PhonicsHelper.generateName(6, 3));
 		this.dataManager.register(TRIBE_NAME, "");
@@ -69,6 +87,9 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
         super.writeEntityToNBT(compound);
+        compound.setDouble("strength", this.getStrength());
+        compound.setDouble("stamina", this.getStrength());
+        compound.setDouble("speed", this.getStrength());
         compound.setString("firstName", this.getFirstName());
         compound.setInteger("age", this.getAge());
         compound.setFloat("size", this.getSize());
@@ -87,6 +108,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
         compound.setDouble("foodLevels", this.getFoodLevels());
         compound.setDouble("sickness", this.getSickness());
         compound.setUniqueId("tribe", this.getTribeID());
+        compound.setBoolean("isSleeping", this.isSleeping());
         NBTTagList list = new NBTTagList();
         for (int i = 0; i < this.inventory.getSizeInventory(); ++i) {
             ItemStack itemstack = this.inventory.getStackInSlot(i);
@@ -100,6 +122,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
     public void readEntityFromNBT(NBTTagCompound compound) {
        super.readEntityFromNBT(compound);
+       this.setStats(compound.getDouble("strength"), compound.getDouble("stamina"), compound.getDouble("speed"));
        this.setFirstName(compound.getString("firstName"));
        this.setAge(compound.getInteger("age"));
        this.setSize(compound.getFloat("size"));
@@ -112,12 +135,13 @@ public class EntityHuman extends EntityMob implements IAnimals {
        this.setAltitudeStrength(compound.getDouble("altitudeStrength"));
        this.setHeatStrength(compound.getDouble("heatStrength"));
        this.setVoicePitch(compound.getDouble("voicePitch"));
-       this.setHomosexual(compound.getBoolean("homosexual"));
-       this.setFertile(compound.getBoolean("fertile"));
+       this.setIsHomosexual(compound.getBoolean("homosexual"));
+       this.setIsFertile(compound.getBoolean("fertile"));
        this.setAgeFactor(compound.getDouble("ageFactor"));
        this.setFoodLevels(compound.getDouble("foodLevels"));
        this.setSickness(compound.getDouble("sickness"));
        this.setTribe(compound.getUniqueId("tribe"));
+       this.setIsSleeping(compound.getBoolean("isSleeping"));
        NBTTagList list = compound.getTagList("inventory", 10);
        for (int i = 0; i < list.tagCount(); ++i) {
            NBTTagCompound tag = list.getCompoundTagAt(i);
@@ -127,6 +151,28 @@ public class EntityHuman extends EntityMob implements IAnimals {
            }
        }
     }
+	@Override
+	public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata) {
+		livingdata = super.onInitialSpawn(difficulty, livingdata);
+		if (this.getTribeID() == null) {
+			EntityHuman base = Humans.gen(Humans.create(this.world, this.getPosition()), this.getClass());
+			this.setAge((base.world.rand.nextInt(20) == 1 ? 60480000 : 0) + base.world.rand.nextInt(60480000));
+			this.setStats(base.getStrength(), base.getStamina(), base.getSpeed());
+			this.setSize(base.getSize() + ((base.world.rand.nextFloat() - 0.5F) / 10));
+			this.setHairType(base.getHairType());
+			this.setHairColor(base.getHairColor());
+			this.setEyeColor(base.getEyeColor());
+			this.setSkinColor(base.getSkinColor());
+			this.setCanHairGray(base.canHairGray());
+			this.setImmuneStrength(base.getImmuneStrength());
+			this.setAltitudeStrength(base.getAltitudeStrength());
+			this.setHeatStrength(base.getHeatStrength());
+			this.setAgeFactor(base.getAgeFactor());
+			this.setTribe(base.getTribeID());
+		}
+		this.setHealth(this.getMaxHealth());
+		return livingdata;
+	}
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
@@ -145,17 +191,12 @@ public class EntityHuman extends EntityMob implements IAnimals {
 					this.attackEntityFrom(DamageSource.STARVE, 1.0F);
 					this.foodLevels = 0;
 				}
-				else if (this.foodLevels > 18.0F && this.getHealth() < 12.0F) {
+				else if (this.foodLevels > 18.0F && this.getHealth() < 20.0F) {
 					this.heal(1.0F);
 					this.depleteFoodLevels(0.25F);
 				}
 				else {
 					this.depleteFoodLevels(0.01F);
-				}
-			}
-			if (this.ticksExisted % 20 == 0) {
-				if (Math.abs(this.getHeatFactor()) > 1.0F && this.world.getLightFor(EnumSkyBlock.BLOCK, this.getPosition()) < 11) {
-					this.attackEntityFrom(DamageSource.OUT_OF_WORLD, 2.0F);
 				}
 			}
 		}
@@ -236,18 +277,18 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return true;
 	}
 	public void setStats(double strength, double stamina, double speed) {
-		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * strength);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D * stamina);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1D * speed);
+		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * strength + 1.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D * stamina + 20.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.2D * speed + 0.3D);
 	}
 	public double getStrength() {
-		return this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue() / 1.0D;
+		return this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue() / 1.0D - 1.0D;
 	}
 	public double getStamina() {
-		return this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() / 20.0D;
+		return this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() / 20.0D - 20.0D;
 	}
 	public double getSpeed() {
-		return this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() / 0.1D;
+		return this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() / 0.2D - 0.3D;
 	}
 	public String getFirstName() {
 		return this.dataManager.get(FIRST_NAME);
@@ -331,7 +372,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return this.heatStrength;
 	}
 	public double getHeatFactor() {
-		return this.world.getBiome(this.getPosition()).getDefaultTemperature() - this.getHeatStrength();
+		return this.world.getBiome(this.getPosition()).getDefaultTemperature() - this.getHeatStrength() - (this.getTotalArmorValue() / 2);
 	}
 	public void setHeatStrength(double heatStrength) {
 		this.heatStrength = heatStrength;
@@ -345,13 +386,13 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public boolean isHomosexual() {
 		return this.homosexual;
 	}
-	public void setHomosexual(boolean homosexual) {
+	public void setIsHomosexual(boolean homosexual) {
 		this.homosexual = homosexual;
 	}
 	public boolean isFertile() {
 		return this.fertile;
 	}
-	public void setFertile(boolean fertile) {
+	public void setIsFertile(boolean fertile) {
 		this.fertile = fertile;
 	}
 	public double getAgeFactor() {
@@ -364,12 +405,13 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return this.foodLevels;
 	}
 	public void depleteFoodLevels(double base) {
+		double orig = base;
 		base *= this.getSize()
 				+ this.getSickness()
 				+ this.getAltitudeFactor()
 				+ this.getHeatFactor()
 				+ this.getImmuneFactor();
-		this.foodLevels -= base;
+		this.foodLevels -= Math.min(orig, base);
 	}
 	public void setFoodLevels(double foodLevels) {
 		this.foodLevels = foodLevels;
@@ -391,6 +433,12 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public InventoryBasic getInventory() {
 		return this.inventory;
+	}
+	public boolean isSleeping() {
+		return this.isSleeping;
+	}
+	public void setIsSleeping(boolean isSleeping) {
+		this.isSleeping = isSleeping;
 	}
 	public boolean isOldEnoughToBreed() {
 		return false;

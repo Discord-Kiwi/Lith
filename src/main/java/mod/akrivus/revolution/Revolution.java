@@ -37,7 +37,7 @@ public class Revolution {
 
 	@EventHandler
 	public void init(final FMLInitializationEvent event) {
-		GameRegistry.registerWorldGenerator(new WorldGenTribes(), 10);
+		GameRegistry.registerWorldGenerator(new WorldGenTribes(), 5);
 		Revolution.proxy.init(event);
 	}
 

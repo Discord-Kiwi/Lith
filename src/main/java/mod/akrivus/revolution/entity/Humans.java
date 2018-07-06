@@ -6,8 +6,15 @@ import java.util.UUID;
 
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.lang.PhonicsHelper;
+import net.minecraft.init.Items;
+import net.minecraft.inventory.EntityEquipmentSlot;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
 
 public class Humans {
 	private static final Random RANDOM = new Random();
@@ -19,6 +26,7 @@ public class Humans {
 		UUID uuid = TribeData.get(world).addTribe(PhonicsHelper.generateName());
 		for (int i = 0; i < 10; ++i) {
 			EntityHuman human = new EntityHuman(world);
+			human.setPosition(pos.getX(), pos.getY(), pos.getZ());
 			human.setStats(world.rand.nextDouble(), world.rand.nextDouble(), world.rand.nextDouble());
 			human.setSize(Math.min(world.rand.nextFloat() + 0.6F, 1.1F));
 			human.setHairType(world.rand.nextInt(4) + 1);
@@ -42,7 +50,7 @@ public class Humans {
 					humans.remove(i);
 					break;
 				}
-				if (Math.abs(temp - human.getHeatStrength() + 1) > 0.5) {
+				if (Math.abs(human.getHeatFactor()) > 1.0F) {
 					humans.remove(i);
 					break;
 				}
@@ -58,8 +66,14 @@ public class Humans {
 		}
 		return humans.get(0);
 	}
-	public static EntityHuman gen(EntityHuman base) {
+	public static EntityHuman gen(EntityHuman base, Class<? extends EntityHuman> clazz) {
 		EntityHuman human = base.world.rand.nextBoolean() ? new EntityFemale(base.world) : new EntityMale(base.world); 
+		if (clazz == EntityFemale.class) {
+			human = new EntityFemale(base.world);
+		}
+		else if (clazz == EntityMale.class) {
+			human = new EntityMale(base.world);
+		}
 		human.setAge((base.world.rand.nextInt(20) == 1 ? 60480000 : 0) + base.world.rand.nextInt(60480000));
 		human.setStats(base.getStrength(), base.getStamina(), base.getSpeed());
 		human.setSize(base.getSize() + ((base.world.rand.nextFloat() - 0.5F) / 10));
@@ -79,6 +93,33 @@ public class Humans {
 		human.setHeatStrength(base.getHeatStrength());
 		human.setAgeFactor(base.getAgeFactor());
 		human.setTribe(base.getTribeID());
+		Biome biome = base.world.getBiome(base.getPosition());
+		if (human instanceof EntityMale && human.isOldEnoughToBreed()) {
+			if (BiomeDictionary.hasType(biome, Type.MOUNTAIN)) {
+				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.STONE_SWORD));
+			}
+			if (BiomeDictionary.hasType(biome, Type.FOREST)) {
+				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.WOODEN_SWORD));
+			}
+			if (BiomeDictionary.hasType(biome, Type.PLAINS)) {
+				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.BOW));
+			}
+			if (BiomeDictionary.hasType(biome, Type.WATER)) {
+				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.FISHING_ROD));
+			}
+		}
+		if (biome.getDefaultTemperature() < -0.1F) {
+			human.setItemStackToSlot(EntityEquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
+		}
+		if (biome.getDefaultTemperature() <= 0.0F) {
+			human.setItemStackToSlot(EntityEquipmentSlot.CHEST, new ItemStack(Items.LEATHER_CHESTPLATE));
+		}
+		if (biome.getDefaultTemperature() <= 0.5F) {
+			human.setItemStackToSlot(EntityEquipmentSlot.LEGS, new ItemStack(Items.LEATHER_LEGGINGS));
+		}
+		if (biome.getDefaultTemperature() <= 1.0F) {
+			human.setItemStackToSlot(EntityEquipmentSlot.FEET, new ItemStack(Items.LEATHER_BOOTS));
+		}
 		return human;
 	}
 	public static int colorize(int[] colors, float temp, int limiter) {
