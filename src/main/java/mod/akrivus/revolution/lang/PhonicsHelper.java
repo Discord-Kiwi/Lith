@@ -107,7 +107,7 @@ public class PhonicsHelper {
 				buildon += ch;
 			}
 		}
-		return buildon;
+		return new StringBuilder().append(buildon.substring(0, 1).toUpperCase()).append(buildon.substring(1)).toString();
 	}
 	public static String generateName(int length, int margin) {
 		return generateName(length, margin, "-");
