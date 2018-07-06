@@ -20,6 +20,10 @@ public class EntityMale extends EntityHuman {
     public void readEntityFromNBT(NBTTagCompound compound) {
        super.readEntityFromNBT(compound);
     }
+	@Override
+	public boolean isOldEnoughToBreed() {
+		return this.getAge() > 24192000;
+	}
 	public int getBeardType() {
 		return this.dataManager.get(BEARD_TYPE);
 	}

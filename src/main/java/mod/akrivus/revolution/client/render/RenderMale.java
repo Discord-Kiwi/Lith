@@ -20,7 +20,13 @@ public class RenderMale extends RenderBiped<EntityMale> {
 	}
 	@Override
 	public void preRenderCallback(EntityMale human, float partialTickTime) {
-		GlStateManager.scale(human.getSize(), human.getSize(), human.getSize());
+		if (human.getAge() < 24192000) {
+			float size = Math.min(1.0F, human.getSize() * (human.getAge() / 24192000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F));
+			GlStateManager.scale(size, size, size);
+		}
+		else {
+			GlStateManager.scale(human.getSize(), human.getSize(), human.getSize());
+		}
 	}
 	@Override
 	public ResourceLocation getEntityTexture(EntityMale male) {
@@ -28,7 +34,7 @@ public class RenderMale extends RenderBiped<EntityMale> {
 	}
 	@Override
 	protected void renderEntityName(EntityMale human, double x, double y, double z, String name, double distanceSq) {
-		this.renderLivingLabel(human, human.getTribeName(), x, y+0.25, z, 64);
-		this.renderLivingLabel(human, human.getFirstName() , x, y, z, 64);
+		this.renderLivingLabel(human, human.getTribeName(), x, y + 0.25, z, 64);
+		this.renderLivingLabel(human, human.getFirstName(), x, y, z, 64);
 	}
 }

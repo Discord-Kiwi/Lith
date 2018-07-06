@@ -1,14 +1,17 @@
 package mod.akrivus.revolution.entity;
 
+import java.util.Iterator;
 import java.util.UUID;
 
 import mod.akrivus.revolution.data.Tribe;
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.lang.PhonicsHelper;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -16,9 +19,14 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 
 public class EntityHuman extends EntityMob implements IAnimals {
@@ -56,6 +64,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.dataManager.register(EYE_COLOR, 0);
 		this.dataManager.register(SKIN_COLOR, 0);
 		this.experienceValue = 0;
+		this.foodLevels = 20;
 	}
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
@@ -121,17 +130,83 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
-		if (this.world.isRemote) {
+		if (!this.world.isRemote) {
+			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
+				this.setTribeName(this.getTribe().name);
+			}
+			if (this.ticksExisted % 2400 == 0) {
+				Iterator<PotionEffect> it = this.getActivePotionEffects().iterator();
+				while (it.hasNext()) {
+					if (it.next().getPotion() == MobEffects.HUNGER) {
+						this.depleteFoodLevels(1.0F);
+					}
+				}
+				if (this.foodLevels <= 0) {
+					this.attackEntityFrom(DamageSource.STARVE, 1.0F);
+					this.foodLevels = 0;
+				}
+				else if (this.foodLevels > 18.0F && this.getHealth() < 12.0F) {
+					this.heal(1.0F);
+					this.depleteFoodLevels(0.25F);
+				}
+				else {
+					this.depleteFoodLevels(0.01F);
+				}
+			}
+			if (this.ticksExisted % 20 == 0) {
+				if (Math.abs(this.getHeatFactor()) > 1.0F && this.world.getLightFor(EnumSkyBlock.BLOCK, this.getPosition()) < 11) {
+					this.attackEntityFrom(DamageSource.OUT_OF_WORLD, 2.0F);
+				}
+			}
+		}
+		this.setAge(this.getAge() + (int)(Math.ceil(2.0 * this.getAgeFactor())));
+		if (!this.isOldEnoughToBreed() && this.getAge() < 60480000) {
+			if (this.ticksExisted % 20 == 0) {
+				float growth = Math.min(this.getSize(), this.getSize() * (this.getAge() / (this instanceof EntityFemale ? 18144000.0F : 24192000.0F) * (this.getSize() / 3.0F)) + (this.getSize() / 4.0F));
+				if (this instanceof EntityFemale) {
+					this.setSize(0.6F * 0.9F * growth, 1.95F * 0.9F * growth);
+				}
+				else {
+					this.setSize(0.6F * growth, 1.95F * growth);
+				}
+			}
+		}
+		else {
 			float size = this.getSize() * (this instanceof EntityFemale ? 0.9F : 1.0F);
 			if (0.6F * size != this.width || 1.95F * size != this.height) {
 				this.setSize(0.6F * size, 1.95F * size);
 			}
 		}
-		else {
-			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
-				this.setTribeName(this.getTribe().name);
-			}
+	}
+	@Override
+	public boolean attackEntityFrom(DamageSource source, float amount) {
+		boolean hurt = super.attackEntityFrom(source, amount);
+		if (hurt) {
+			this.depleteFoodLevels(0.1F);
 		}
+		return hurt;
+	}
+	@Override
+	public boolean attackEntityAsMob(Entity target) {
+		boolean hit = super.attackEntityAsMob(target);
+		if (hit) {
+			this.depleteFoodLevels(0.1F);
+		}
+		return hit;
+	}
+	@Override
+	public void jump() {
+		this.depleteFoodLevels(0.2F);
+		super.jump();
+	}
+	@Override
+	public boolean processInteract(EntityPlayer player, EnumHand hand) {
+		if (!this.world.isRemote && hand == EnumHand.MAIN_HAND) {
+			player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
+			player.sendMessage(new TextComponentString("Approximately " + (this.getAge() / 2016000.0F) + " years old."));
+			player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (this.getHealth() / this.getMaxHealth() * 100) + "% healthy, " + (this.foodLevels / 20 * 100) + "% full."));
+		}
+		return super.processInteract(player, hand);
 	}
 	@Override
 	public void onUpdate() {
@@ -202,7 +277,6 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return this.dataManager.get(SIZE);
 	}
 	public void setSize(float size) {
-		this.setSize(0.6F * size, 1.95F * size);
 		this.dataManager.set(SIZE, size);
 	}
 	public int getHairColor() {
@@ -238,17 +312,26 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public double getImmuneStrength() {
 		return this.immuneStrength;
 	}
+	public double getImmuneFactor() {
+		return Math.max(0, this.getSickness() - this.getImmuneStrength());
+	}
 	public void setImmuneStrength(double immuneStrength) {
 		this.immuneStrength = immuneStrength;
 	}
 	public double getAltitudeStrength() {
 		return this.altitudeStrength;
 	}
+	public double getAltitudeFactor() {
+		return this.getAltitudeStrength() / this.posY - 64 / 192;
+	}
 	public void setAltitudeStrength(double altitudeStrength) {
 		this.altitudeStrength = altitudeStrength;
 	}
 	public double getHeatStrength() {
 		return this.heatStrength;
+	}
+	public double getHeatFactor() {
+		return this.world.getBiome(this.getPosition()).getDefaultTemperature() - this.getHeatStrength();
 	}
 	public void setHeatStrength(double heatStrength) {
 		this.heatStrength = heatStrength;
@@ -280,6 +363,14 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public double getFoodLevels() {
 		return this.foodLevels;
 	}
+	public void depleteFoodLevels(double base) {
+		base *= this.getSize()
+				+ this.getSickness()
+				+ this.getAltitudeFactor()
+				+ this.getHeatFactor()
+				+ this.getImmuneFactor();
+		this.foodLevels -= base;
+	}
 	public void setFoodLevels(double foodLevels) {
 		this.foodLevels = foodLevels;
 	}
@@ -300,5 +391,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public InventoryBasic getInventory() {
 		return this.inventory;
+	}
+	public boolean isOldEnoughToBreed() {
+		return false;
 	}
 }
