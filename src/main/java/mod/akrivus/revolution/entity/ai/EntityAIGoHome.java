@@ -15,7 +15,7 @@ public class EntityAIGoHome extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.human.getTribe() != null && !this.human.getTribe().isHomeless()) {
+    	if (!this.human.getTribe().isHomeless() && !this.human.isSleeping()) {
     		this.home = this.human.getTribe().getHome();
     		if (this.human.world.getWorldTime() > 12000) {
     			return true;

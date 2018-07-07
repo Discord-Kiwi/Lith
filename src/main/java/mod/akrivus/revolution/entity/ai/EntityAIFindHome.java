@@ -17,14 +17,14 @@ public class EntityAIFindHome extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.human.getTribe() != null && this.human.getTribe().isHomeless()) {
+    	if (this.human.getTribe().isHomeless()) {
     		return true;
     	}
     	return false;
     }
     @Override
     public boolean shouldContinueExecuting() {
-        return this.human.getTribe() != null && this.human.getTribe().isHomeless() && !this.homeValid;
+        return this.human.getTribe().isHomeless() && !this.homeValid;
     }
     @Override
     public void startExecuting() {
@@ -55,6 +55,12 @@ public class EntityAIFindHome extends EntityAIBase {
     		if (this.homeValid) {
     			this.human.getNavigator().tryMoveToXYZ(this.newPos.getX(), this.newPos.getY(), this.newPos.getZ(), 1.0D);
     			this.human.getTribe().setHome(this.newPos);
+    		}
+    		else {
+    			Vec3d pos = RandomPositionGenerator.findRandomTarget(this.human, 16, 8);
+    	    	if (pos != null) {
+    	    		this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
+    	    	}
     		}
     	}
     	else {

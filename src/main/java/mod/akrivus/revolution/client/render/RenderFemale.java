@@ -29,6 +29,9 @@ public class RenderFemale extends RenderBiped<EntityFemale> {
 		else {
 			GlStateManager.scale(human.getSize() * 0.9F, human.getSize() * 0.9F, human.getSize() * 0.9F);
 		}
+		if (human.isSleeping()) {
+			GlStateManager.rotate(90.0F, 0, 0, 1);
+		}
 	}
 	@Override
 	public ResourceLocation getEntityTexture(EntityFemale female) {

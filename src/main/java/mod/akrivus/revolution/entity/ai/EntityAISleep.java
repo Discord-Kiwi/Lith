@@ -11,8 +11,8 @@ public class EntityAISleep extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.human.getTribe() != null && !this.human.getTribe().isHomeless() && this.human.getRevengeTarget() != null) {
-    		if (this.human.world.getWorldTime() > 14000 && this.human.getDistanceSq(this.human.getTribe().getHome()) < 64) {
+    	if (!this.human.getTribe().isHomeless() && this.human.getRevengeTarget() != null) {
+    		if (this.human.world.getWorldTime() > 14000 && this.human.getDistanceSq(this.human.getTribe().getHome()) < 16) {
     			return true;
     		}
     	}

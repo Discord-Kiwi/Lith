@@ -11,7 +11,6 @@ public class EntityAISpeak extends EntityAIBase {
     protected EntityHuman entity;
     protected EntityHuman closestEntity;
     protected float maxDistance;
-    private int lookTime;
     public EntityAISpeak(EntityHuman entity, float maxDistance) {
         this.entity = entity;
         this.maxDistance = maxDistance;

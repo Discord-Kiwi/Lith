@@ -61,6 +61,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected static final DataParameter<Integer> HAIR_TYPE = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
 	protected static final DataParameter<Integer> EYE_COLOR = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
 	protected static final DataParameter<Integer> SKIN_COLOR = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
+	protected static final DataParameter<Boolean> SLEEPING = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
 	
 	protected boolean canHairGray;
 	protected double immuneStrength;
@@ -76,8 +77,6 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected UUID tribe;
 	protected InventoryBasic inventory;
 	protected List<UUID> memories;
-	
-	protected boolean isSleeping;
 	
 	public EntityHuman(World world) {
 		super(world);
@@ -104,6 +103,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.dataManager.register(HAIR_TYPE, 0);
 		this.dataManager.register(EYE_COLOR, 0);
 		this.dataManager.register(SKIN_COLOR, 0);
+		this.dataManager.register(SLEEPING, false);
 		this.experienceValue = 0;
 		this.foodLevels = 20;
 	}
@@ -260,8 +260,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		boolean hurt = super.attackEntityFrom(source, amount);
 		if (hurt) {
 			this.depleteFoodLevels(0.1F);
-			if (source.getTrueSource() instanceof Entity) {
-				Entity target = source.getTrueSource();
+			if (source.getTrueSource() instanceof EntityLivingBase) {
+				EntityLivingBase target = (EntityLivingBase)(source.getTrueSource());
 				boolean learned = true;
 				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
 				for (UUID id : this.memories) {
@@ -282,6 +282,12 @@ public class EntityHuman extends EntityMob implements IAnimals {
 						else {
 							this.addMemory("FEAR", target);
 						}
+					}
+				}
+				List<EntityHuman> list = this.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.getEntityBoundingBox().grow(8.0D, 4.0D, 8.0D));
+				for (EntityHuman human : list) {
+					if (human.getTribeID().equals(this.getTribeID())) {
+						human.setRevengeTarget(target);
 					}
 				}
 			}
@@ -334,9 +340,6 @@ public class EntityHuman extends EntityMob implements IAnimals {
     }
 	@Override
 	protected void updateEquipmentIfNeeded(EntityItem item) {
-		if (this.getDistanceSq(this.getTribe().getHome()) > 256 && this.world.rand.nextBoolean()) {
-			this.addMemory("GOTO", this.getPosition());
-		}
         ItemStack itemstack = item.getItem();
         ItemStack other = this.inventory.addItem(itemstack);
         if (other.isEmpty()) {
@@ -543,10 +546,10 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return this.memories;
 	}
 	public boolean isSleeping() {
-		return this.isSleeping;
+		return this.dataManager.get(SLEEPING);
 	}
-	public void setIsSleeping(boolean isSleeping) {
-		this.isSleeping = isSleeping;
+	public void setIsSleeping(boolean sleeping) {
+		this.dataManager.set(SLEEPING, sleeping);
 	}
 	public boolean isOldEnoughToBreed() {
 		return false;

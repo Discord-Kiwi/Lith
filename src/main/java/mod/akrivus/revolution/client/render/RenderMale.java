@@ -29,6 +29,9 @@ public class RenderMale extends RenderBiped<EntityMale> {
 		else {
 			GlStateManager.scale(human.getSize(), human.getSize(), human.getSize());
 		}
+		if (human.isSleeping()) {
+			GlStateManager.rotate(90.0F, 0, 0, 1);
+		}
 	}
 	@Override
 	public ResourceLocation getEntityTexture(EntityMale male) {
