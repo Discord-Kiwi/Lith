@@ -6,6 +6,13 @@ import java.util.UUID;
 
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.lang.PhonicsHelper;
+import net.minecraft.entity.monster.EntitySkeleton;
+import net.minecraft.entity.monster.EntitySpider;
+import net.minecraft.entity.monster.EntityZombie;
+import net.minecraft.entity.passive.EntityCow;
+import net.minecraft.entity.passive.EntityPig;
+import net.minecraft.entity.passive.EntityRabbit;
+import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -97,15 +104,25 @@ public class Humans {
 		if (human instanceof EntityMale && human.isOldEnoughToBreed()) {
 			if (BiomeDictionary.hasType(biome, Type.MOUNTAIN)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.STONE_SWORD));
+				human.addMemory("FIGHT", new EntitySheep(base.world));
+				human.addMemory("FIGHT", new EntityPig(base.world));
+				human.addMemory("FIGHT", new EntityZombie(base.world));
 			}
 			if (BiomeDictionary.hasType(biome, Type.FOREST)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.WOODEN_SWORD));
+				human.addMemory("FIGHT", new EntitySheep(base.world));
+				human.addMemory("FIGHT", new EntityRabbit(base.world));
+				human.addMemory("FEAR", new EntityZombie(base.world));
 			}
 			if (BiomeDictionary.hasType(biome, Type.PLAINS)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.BOW));
+				human.addMemory("FIGHT", new EntityCow(base.world));
+				human.addMemory("FIGHT", new EntityRabbit(base.world));
+				human.addMemory("FEAR", new EntitySkeleton(base.world));
 			}
 			if (BiomeDictionary.hasType(biome, Type.WATER)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.FISHING_ROD));
+				human.addMemory("FIGHT", new EntitySpider(base.world));
 			}
 		}
 		if (biome.getDefaultTemperature() < -0.1F) {

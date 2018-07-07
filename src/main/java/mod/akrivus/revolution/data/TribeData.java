@@ -37,14 +37,14 @@ public class TribeData extends WorldSavedData {
 			NBTTagCompound nbt = new NBTTagCompound();
 			Entry<UUID, Tribe> pair = it.next();
 			nbt.setString("id", pair.getKey().toString());
-			nbt.setBoolean("homeless", pair.getValue().homeless);
-			nbt.setDouble("oldX", pair.getValue().oldHome.getX());
-			nbt.setDouble("oldY", pair.getValue().oldHome.getY());
-			nbt.setDouble("oldZ", pair.getValue().oldHome.getZ());
-			nbt.setDouble("homeX", pair.getValue().home.getX());
-			nbt.setDouble("homeY", pair.getValue().home.getY());
-			nbt.setDouble("homeZ", pair.getValue().home.getZ());
-			nbt.setString("name", pair.getValue().name);
+			nbt.setBoolean("homeless", pair.getValue().isHomeless());
+			nbt.setDouble("oldX", pair.getValue().getOldHome().getX());
+			nbt.setDouble("oldY", pair.getValue().getOldHome().getY());
+			nbt.setDouble("oldZ", pair.getValue().getOldHome().getZ());
+			nbt.setDouble("homeX", pair.getValue().getHome().getX());
+			nbt.setDouble("homeY", pair.getValue().getHome().getY());
+			nbt.setDouble("homeZ", pair.getValue().getHome().getZ());
+			nbt.setString("name", pair.getValue().getName());
 			list.appendTag(nbt);
 		}
 		compound.setTag("tribes", list);
@@ -57,9 +57,9 @@ public class TribeData extends WorldSavedData {
 			NBTTagCompound nbt = list.getCompoundTagAt(i);
 			UUID id = UUID.fromString(nbt.getString("id"));
 			Tribe tribe = new Tribe(nbt.getString("name"));
-			tribe.oldHome = new BlockPos(nbt.getDouble("oldX"), nbt.getDouble("oldY"), nbt.getDouble("oldZ"));
-			tribe.home = new BlockPos(nbt.getDouble("homeX"), nbt.getDouble("homeY"), nbt.getDouble("homeZ"));
-			tribe.homeless = nbt.getBoolean("homeless");
+			tribe.setOldHome(new BlockPos(nbt.getDouble("oldX"), nbt.getDouble("oldY"), nbt.getDouble("oldZ")));
+			tribe.setHome(new BlockPos(nbt.getDouble("homeX"), nbt.getDouble("homeY"), nbt.getDouble("homeZ")));
+			tribe.setHomeless(nbt.getBoolean("homeless"));
 			this.tribes.put(id, tribe);
 		}
 	}

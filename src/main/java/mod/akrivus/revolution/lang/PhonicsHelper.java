@@ -118,4 +118,32 @@ public class PhonicsHelper {
 	public static String generateName() {
 		return generateName(10, 2);
 	}
+	public static String generateWord(String word, String... blacklist) {
+		Random rand = new Random(word.hashCode());
+		int margin = word.length() / 2 + 1;
+		int length = Math.max(3, word.length() / 2 + 1 + rand.nextInt(margin) - margin);
+		List offset = Arrays.asList(blacklist);
+		boolean vowel = rand.nextBoolean();
+		String buildon = "";
+		for (int i = 0; i < length; ++i) {
+			vowel = !vowel;
+			if (vowel) {
+				String ch = VOWELS[rand.nextInt(VOWELS.length)];
+				if (offset.contains(ch)) {
+					vowel = !vowel;
+					--i; continue;
+				}
+				buildon += ch;
+			}
+			else {
+				String ch = CONSOS[rand.nextInt(CONSOS.length)];
+				if (offset.contains(ch)) {
+					vowel = !vowel;
+					--i; continue;
+				}
+				buildon += ch;
+			}
+		}
+		return new StringBuilder().append(buildon.substring(0, 1).toUpperCase()).append(buildon.substring(1)).toString();
+	}
 }

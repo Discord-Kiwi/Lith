@@ -15,7 +15,7 @@ public class EntityAIBeAlert extends EntityAIBase {
     public EntityAIBeAlert(EntityHuman entity, float maxDistance) {
         this.entity = entity;
         this.maxDistance = maxDistance;
-        this.setMutexBits(7);
+        this.setMutexBits(1);
     }
     @Override
     public boolean shouldExecute() {

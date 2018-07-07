@@ -1,25 +1,40 @@
 package mod.akrivus.revolution.entity;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import mod.akrivus.revolution.data.LearnedData;
+import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.data.Tribe;
 import mod.akrivus.revolution.data.TribeData;
+import mod.akrivus.revolution.entity.ai.EntityAIAvoidFromMemory;
 import mod.akrivus.revolution.entity.ai.EntityAIBeAlert;
 import mod.akrivus.revolution.entity.ai.EntityAIFindHome;
 import mod.akrivus.revolution.entity.ai.EntityAIGoHome;
-import mod.akrivus.revolution.entity.ai.EntityAIRememberTarget;
+import mod.akrivus.revolution.entity.ai.EntityAIGoToMemory;
+import mod.akrivus.revolution.entity.ai.EntityAIPickUpItems;
+import mod.akrivus.revolution.entity.ai.EntityAISleep;
+import mod.akrivus.revolution.entity.ai.EntityAISpeak;
+import mod.akrivus.revolution.entity.ai.EntityAITargetFromMemory;
 import mod.akrivus.revolution.lang.PhonicsHelper;
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
+import net.minecraft.entity.ai.EntityAIWander;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.InventoryBasic;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -60,6 +75,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	
 	protected UUID tribe;
 	protected InventoryBasic inventory;
+	protected List<UUID> memories;
 	
 	protected boolean isSleeping;
 	
@@ -67,12 +83,19 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		super(world);
 		this.setCanPickUpLoot(true);
 		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(0, new EntityAIAttackMelee(this, 1.0F, false));
-		this.tasks.addTask(1, new EntityAIFindHome(this));
-		this.tasks.addTask(1, new EntityAIGoHome(this));
-		this.tasks.addTask(5, new EntityAIBeAlert(this, 12));
-		this.targetTasks.addTask(1, new EntityAIRememberTarget(this));
+		this.tasks.addTask(0, new EntityAISpeak(this, 8));
+		this.tasks.addTask(1, new EntityAISleep(this));
+		this.tasks.addTask(1, new EntityAIAttackMelee(this, 0.8F, false));
+		this.tasks.addTask(2, new EntityAIFindHome(this));
+		this.tasks.addTask(2, new EntityAIGoHome(this));
+		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 0.8D));
+		this.tasks.addTask(3, new EntityAIPickUpItems(this, 0.8D));
+		this.tasks.addTask(4, new EntityAIGoToMemory(this));
+		this.tasks.addTask(6, new EntityAIBeAlert(this, 12));
+		this.tasks.addTask(7, new EntityAIWander(this, 0.5F));
+		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
 		this.inventory = new InventoryBasic("inventory", false, 36);
+		this.memories = new ArrayList<UUID>();
 		this.dataManager.register(FIRST_NAME, PhonicsHelper.generateName(6, 3));
 		this.dataManager.register(TRIBE_NAME, "");
 		this.dataManager.register(AGE, 0);
@@ -109,15 +132,22 @@ public class EntityHuman extends EntityMob implements IAnimals {
         compound.setDouble("sickness", this.getSickness());
         compound.setUniqueId("tribe", this.getTribeID());
         compound.setBoolean("isSleeping", this.isSleeping());
-        NBTTagList list = new NBTTagList();
+        NBTTagList inv = new NBTTagList();
         for (int i = 0; i < this.inventory.getSizeInventory(); ++i) {
             ItemStack itemstack = this.inventory.getStackInSlot(i);
             NBTTagCompound tag = new NBTTagCompound();
             tag.setInteger("slot", i);
             itemstack.writeToNBT(tag);
-            list.appendTag(tag);
+            inv.appendTag(tag);
         }
-        compound.setTag("inventory", list);
+        compound.setTag("inventory", inv);
+        NBTTagList mem = new NBTTagList();
+        for (int i = 0; i < this.memories.size(); ++i) {
+        	NBTTagCompound tag = new NBTTagCompound();
+        	tag.setString("id", this.memories.get(i).toString());
+        	mem.appendTag(tag);
+        }
+        compound.setTag("memories", mem);
     }
 	@Override
     public void readEntityFromNBT(NBTTagCompound compound) {
@@ -142,13 +172,19 @@ public class EntityHuman extends EntityMob implements IAnimals {
        this.setSickness(compound.getDouble("sickness"));
        this.setTribe(compound.getUniqueId("tribe"));
        this.setIsSleeping(compound.getBoolean("isSleeping"));
-       NBTTagList list = compound.getTagList("inventory", 10);
-       for (int i = 0; i < list.tagCount(); ++i) {
-           NBTTagCompound tag = list.getCompoundTagAt(i);
+       NBTTagList inv = compound.getTagList("inventory", 10);
+       for (int i = 0; i < inv.tagCount(); ++i) {
+           NBTTagCompound tag = inv.getCompoundTagAt(i);
            int slot = tag.getInteger("slot");
            if (slot >= 0 && slot < this.inventory.getSizeInventory()) {
                this.inventory.setInventorySlotContents(slot, new ItemStack(tag));
            }
+       }
+       NBTTagList mem = compound.getTagList("memories", 10);
+       for (int i = 0; i < mem.tagCount(); ++i) {
+           NBTTagCompound tag = mem.getCompoundTagAt(i);
+           UUID id = UUID.fromString(tag.getString("id"));
+           this.memories.add(id);
        }
     }
 	@Override
@@ -178,7 +214,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		super.onLivingUpdate();
 		if (!this.world.isRemote) {
 			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
-				this.setTribeName(this.getTribe().name);
+				this.setTribeName(this.getTribe().getName());
 			}
 			if (this.ticksExisted % 2400 == 0) {
 				Iterator<PotionEffect> it = this.getActivePotionEffects().iterator();
@@ -224,8 +260,48 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		boolean hurt = super.attackEntityFrom(source, amount);
 		if (hurt) {
 			this.depleteFoodLevels(0.1F);
+			if (source.getTrueSource() instanceof Entity) {
+				Entity target = source.getTrueSource();
+				boolean learned = true;
+				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+				for (UUID id : this.memories) {
+					if (target.getClass().getSimpleName().equals(collective.get(id).getData())) {
+						learned = false;
+						break;
+					}
+				}
+				if (learned) {
+					int factor = this.getAge() - 24192000;
+					if (factor > 48384000 || factor < 0) {
+						this.addMemory("FEAR", target);
+					}
+					else {
+						if (factor / 48384000.0F < this.world.rand.nextDouble()) {
+							this.addMemory("FIGHT", target);
+						}
+						else {
+							this.addMemory("FEAR", target);
+						}
+					}
+				}
+			}
 		}
 		return hurt;
+	}
+	@Override
+	public void onKillEntity(EntityLivingBase target) {
+		super.onKillEntity(target);
+		boolean learned = true;
+		Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+		for (UUID id : this.memories) {
+			if (target.getClass().getSimpleName().equals(collective.get(id).getFight())) {
+				learned = false;
+				break;
+			}
+		}
+		if (learned) {
+			this.addMemory("FIGHT", target);
+		}
 	}
 	@Override
 	public boolean attackEntityAsMob(Entity target) {
@@ -257,6 +333,20 @@ public class EntityHuman extends EntityMob implements IAnimals {
         }
     }
 	@Override
+	protected void updateEquipmentIfNeeded(EntityItem item) {
+		if (this.getDistanceSq(this.getTribe().getHome()) > 256 && this.world.rand.nextBoolean()) {
+			this.addMemory("GOTO", this.getPosition());
+		}
+        ItemStack itemstack = item.getItem();
+        ItemStack other = this.inventory.addItem(itemstack);
+        if (other.isEmpty()) {
+            item.setDead();
+        }
+        else {
+            itemstack.setCount(other.getCount());
+        }
+    }
+	@Override
 	public boolean isPreventingPlayerRest(EntityPlayer playerIn) {
         return false;
     }
@@ -278,8 +368,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public void setStats(double strength, double stamina, double speed) {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * strength + 1.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D * stamina + 20.0D);
 		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.2D * speed + 0.3D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(40.0D);
 	}
 	public double getStrength() {
 		return this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue() / 1.0D - 1.0D;
@@ -372,7 +462,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return this.heatStrength;
 	}
 	public double getHeatFactor() {
-		return this.world.getBiome(this.getPosition()).getDefaultTemperature() - this.getHeatStrength() - (this.getTotalArmorValue() / 2);
+		return this.world.getBiome(this.getPosition()).getDefaultTemperature() - this.getHeatStrength() - (this.getTotalArmorValue() / 4);
 	}
 	public void setHeatStrength(double heatStrength) {
 		this.heatStrength = heatStrength;
@@ -433,6 +523,24 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public InventoryBasic getInventory() {
 		return this.inventory;
+	}
+	public void learnMemory(UUID id) {
+		this.memories.add(id);
+	}
+	public void addMemory(String type, Entity data) {
+		this.learnMemory(LearnedData.get(this.world).addMemory(new Memory(type, data)));
+	}
+	public void addMemory(String type, Block data) {
+		this.learnMemory(LearnedData.get(this.world).addMemory(new Memory(type, data)));
+	}
+	public void addMemory(String type, BlockPos data) {
+		this.learnMemory(LearnedData.get(this.world).addMemory(new Memory(type, data)));
+	}
+	public void addMemory(String type, Item data) {
+		this.learnMemory(LearnedData.get(this.world).addMemory(new Memory(type, data)));
+	}
+	public List<UUID> getMemories() {
+		return this.memories;
 	}
 	public boolean isSleeping() {
 		return this.isSleeping;

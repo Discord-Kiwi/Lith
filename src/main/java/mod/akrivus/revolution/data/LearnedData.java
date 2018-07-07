@@ -33,9 +33,6 @@ public class LearnedData extends WorldSavedData {
 	}
 	public LearnedData(String id) {
 		super(id);
-		this.memories.put(UUID.randomUUID(), new Memory(true, "EntityCow"));
-		this.memories.put(UUID.randomUUID(), new Memory(true, "EntityChicken"));
-		this.memories.put(UUID.randomUUID(), new Memory(true, "EntitySheep"));
 	}
 	@Override
 	public NBTTagCompound writeToNBT(NBTTagCompound compound) {
@@ -44,23 +41,9 @@ public class LearnedData extends WorldSavedData {
 		while (it.hasNext()) {
 			NBTTagCompound nbt = new NBTTagCompound();
 			Entry<UUID, Memory> pair = it.next();
-			nbt.setUniqueId("id", pair.getKey());
-			nbt.setBoolean("destroy", pair.getValue().destroy);
-			if (pair.getValue().destroy) {
-				nbt.setString("item", pair.getValue().item);
-			}
-			else {
-				nbt.setBoolean("avoid", pair.getValue().avoid);
-				nbt.setBoolean("isPos", pair.getValue().isPos);
-				if (pair.getValue().isPos) {
-					nbt.setDouble("x", pair.getValue().location.getX());
-					nbt.setDouble("y", pair.getValue().location.getY());
-					nbt.setDouble("z", pair.getValue().location.getZ());
-				}
-				else {
-					nbt.setUniqueId("entity", pair.getValue().entity);
-				}
-			}
+			nbt.setString("id", pair.getKey().toString());
+			nbt.setString("type", pair.getValue().getType());
+			nbt.setString("data", pair.getValue().getData());
 			list.appendTag(nbt);
 		}
 		compound.setTag("memories", list);
@@ -72,24 +55,13 @@ public class LearnedData extends WorldSavedData {
 		for (int i = 0; i < list.tagCount(); ++i) {
 			NBTTagCompound nbt = list.getCompoundTagAt(i);
 			UUID id = UUID.fromString(nbt.getString("id"));
-			boolean destroy = nbt.getBoolean("destroy");
-			if (destroy) {
-				this.memories.put(id, new Memory(destroy, nbt.getString("item")));
-			}
-			else {
-				boolean avoid = nbt.getBoolean("avoid");
-				boolean isPos = nbt.getBoolean("isPos");
-				if (isPos) {
-					this.memories.put(id, new Memory(avoid, new BlockPos(nbt.getDouble("x"), nbt.getDouble("y"), nbt.getDouble("z"))));
-				}
-				else {
-					this.memories.put(id, new Memory(avoid, nbt.getUniqueId("entity")));
-				}
-			}
+			this.memories.put(id, new Memory(nbt.getString("type"), nbt.getString("data")));
 		}
 	}
-	public void addMemory(Memory memory) {
-		this.memories.put(UUID.randomUUID(), memory);
+	public UUID addMemory(Memory memory) {
+		UUID id = UUID.randomUUID();
+		this.memories.put(id, memory);
 		this.markDirty();
+		return id;
 	}
 }

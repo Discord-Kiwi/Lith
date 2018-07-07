@@ -17,16 +17,14 @@ public class EntityAIFindHome extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.human.getTribe() != null && this.human.getTribe().homeless) {
-    		if (this.human.isOldEnoughToBreed()) {
-    			return true;
-    		}
+    	if (this.human.getTribe() != null && this.human.getTribe().isHomeless()) {
+    		return true;
     	}
     	return false;
     }
     @Override
     public boolean shouldContinueExecuting() {
-        return this.human.getTribe() != null && this.human.getTribe().homeless && !this.homeValid;
+        return this.human.getTribe() != null && this.human.getTribe().isHomeless() && !this.homeValid;
     }
     @Override
     public void startExecuting() {
@@ -35,7 +33,7 @@ public class EntityAIFindHome extends EntityAIBase {
     			for (int z = -8; z < 8; ++z) {
     				BlockPos pos = this.human.getPosition().add(new BlockPos(x, y, z));
     	    		if (this.human.world.isAirBlock(pos.up(2)) && this.human.world.isAirBlock(pos.up(1)) && !this.human.world.isAirBlock(pos)) {
-    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().oldHome) > 256) {
+    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 256) {
     	    				this.homeFound = true;
     	    				this.newPos = pos;
     	    			}
@@ -53,7 +51,7 @@ public class EntityAIFindHome extends EntityAIBase {
     	    		}
     	    	}
         	}
-    		this.homeValid = blocksPassed / 64 > 0.5F;
+    		this.homeValid = blocksPassed / 64.0F > 0.5F;
     		if (this.homeValid) {
     			this.human.getNavigator().tryMoveToXYZ(this.newPos.getX(), this.newPos.getY(), this.newPos.getZ(), 1.0D);
     			this.human.getTribe().setHome(this.newPos);

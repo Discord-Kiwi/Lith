@@ -23,7 +23,7 @@ public class EntityFemale extends EntityHuman {
 	}
 	@Override
 	public boolean isOldEnoughToBreed() {
-		return this.getAge() > 18144000 && this.getAge() < 60480000;
+		return this.getAge() > 18144000;
 	}
 	public float getFertilityFactor() {
 		return this.fertilityFactor;

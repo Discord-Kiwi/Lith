@@ -1,10 +1,17 @@
 package mod.akrivus.revolution;
 
 import mod.akrivus.revolution.entity.EntityFemale;
+import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.EntityMale;
 import mod.akrivus.revolution.proxy.ModProxy;
 import mod.akrivus.revolution.world.WorldGenTribes;
+import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
+import net.minecraft.entity.monster.EntityEnderman;
+import net.minecraft.entity.monster.EntityGolem;
+import net.minecraft.entity.monster.EntityMob;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.Mod.Instance;
@@ -38,6 +45,7 @@ public class Revolution {
 	@EventHandler
 	public void init(final FMLInitializationEvent event) {
 		GameRegistry.registerWorldGenerator(new WorldGenTribes(), 5);
+		MinecraftForge.EVENT_BUS.register(new Revolution.Events());
 		Revolution.proxy.init(event);
 	}
 
@@ -62,6 +70,17 @@ public class Revolution {
 		public static void registerEntities(final RegistryEvent.Register<EntityEntry> event) {
 			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:female", 0).name("female").entity(EntityFemale.class).tracker(256, 20, true).egg(0xF3DBBF, 0x89BD8A).build());
 			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:male", 1).name("male").entity(EntityMale.class).tracker(256, 20, true).egg(0x996C59, 0x008E8F).build());
+		}
+	}
+	public static class Events {
+		@SubscribeEvent
+		public void onEntitySpawn(EntityJoinWorldEvent e) {
+			if (e.getEntity() instanceof EntityMob) {
+				EntityMob mob = (EntityMob)(e.getEntity());
+				if (!(mob instanceof EntityEnderman || mob instanceof EntityHuman)) {
+					mob.targetTasks.addTask(3, new EntityAINearestAttackableTarget<EntityHuman>(mob, EntityHuman.class, true, true));
+				}
+			}
 		}
 	}
 }
