@@ -23,7 +23,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (!this.human.isSleeping() && this.human.world.getWorldTime() < 8000) {
+    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 8000) {
 	        Map<UUID, Memory> memories = LearnedData.get(this.human.world).memories;
 	        List<BlockPos> pos = new ArrayList<BlockPos>();
 	        for (UUID id : this.human.getMemories()) {

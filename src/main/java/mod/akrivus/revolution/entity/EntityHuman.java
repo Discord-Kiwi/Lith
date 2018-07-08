@@ -84,11 +84,11 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(0, new EntityAISpeak(this, 8));
 		this.tasks.addTask(1, new EntityAISleep(this));
-		this.tasks.addTask(1, new EntityAIAttackMelee(this, 0.8F, false));
+		this.tasks.addTask(1, new EntityAIPickUpItems(this, 0.8D));
+		this.tasks.addTask(1, new EntityAIGoHome(this));
+		this.tasks.addTask(2, new EntityAIAttackMelee(this, 0.8F, false));
 		this.tasks.addTask(2, new EntityAIFindHome(this));
-		this.tasks.addTask(2, new EntityAIGoHome(this));
 		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 0.8D));
-		this.tasks.addTask(3, new EntityAIPickUpItems(this, 0.8D));
 		this.tasks.addTask(4, new EntityAIGoToMemory(this));
 		this.tasks.addTask(6, new EntityAIBeAlert(this, 12));
 		this.tasks.addTask(7, new EntityAIWander(this, 0.5F));
@@ -290,6 +290,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 						human.setRevengeTarget(target);
 					}
 				}
+				this.setIsSleeping(false);
 			}
 		}
 		return hurt;

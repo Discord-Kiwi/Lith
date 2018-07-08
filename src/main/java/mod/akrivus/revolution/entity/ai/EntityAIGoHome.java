@@ -15,9 +15,9 @@ public class EntityAIGoHome extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (!this.human.getTribe().isHomeless() && !this.human.isSleeping()) {
+    	if (!this.human.getTribe().isHomeless() && !this.human.isSleeping() && this.human.getRevengeTarget() == null) {
     		this.home = this.human.getTribe().getHome();
-    		if (this.human.world.getWorldTime() > 12000) {
+    		if ((this.human.world.getWorldTime() % 24000) > 12000) {
     			return true;
     		}
     	}
@@ -25,7 +25,7 @@ public class EntityAIGoHome extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) > 1.0F;
+    	return this.human.getDistanceSq(this.home) > 1.0F && this.human.getRevengeTarget() == null && !this.human.isSleeping();
     }
     @Override
     public void startExecuting() {

@@ -30,7 +30,8 @@ public class RenderFemale extends RenderBiped<EntityFemale> {
 			GlStateManager.scale(human.getSize() * 0.9F, human.getSize() * 0.9F, human.getSize() * 0.9F);
 		}
 		if (human.isSleeping()) {
-			GlStateManager.rotate(90.0F, 0, 0, 1);
+			GlStateManager.rotate(180.0F, 0, 0, 1);
+			GlStateManager.rotate(90.0F, 1, 0, 0);
 		}
 	}
 	@Override

@@ -30,7 +30,7 @@ public class Humans {
 	public static final int[] HUMAN_SKIN = new int[] {0xDEC4B7, 0xFFDBAC, 0xF1C27D, 0xE0AC69, 0xC68642, 0x8D5524, 0x3F1A0C};
 	public static EntityHuman create(World world, BlockPos pos) {
 		ArrayList<EntityHuman> humans = new ArrayList<EntityHuman>();
-		UUID uuid = TribeData.get(world).addTribe(PhonicsHelper.generateName());
+		UUID uuid = TribeData.get(world).addTribe(PhonicsHelper.generateName(12, 9));
 		for (int i = 0; i < 10; ++i) {
 			EntityHuman human = new EntityHuman(world);
 			human.setPosition(pos.getX(), pos.getY(), pos.getZ());
@@ -104,25 +104,15 @@ public class Humans {
 		if (human instanceof EntityMale && human.isOldEnoughToBreed()) {
 			if (BiomeDictionary.hasType(biome, Type.MOUNTAIN)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.STONE_SWORD));
-				human.addMemory("FIGHT", new EntitySheep(base.world));
-				human.addMemory("FIGHT", new EntityPig(base.world));
-				human.addMemory("FIGHT", new EntityZombie(base.world));
 			}
 			if (BiomeDictionary.hasType(biome, Type.FOREST)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.WOODEN_SWORD));
-				human.addMemory("FIGHT", new EntitySheep(base.world));
-				human.addMemory("FIGHT", new EntityRabbit(base.world));
-				human.addMemory("FEAR", new EntityZombie(base.world));
 			}
 			if (BiomeDictionary.hasType(biome, Type.PLAINS)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.BOW));
-				human.addMemory("FIGHT", new EntityCow(base.world));
-				human.addMemory("FIGHT", new EntityRabbit(base.world));
-				human.addMemory("FEAR", new EntitySkeleton(base.world));
 			}
 			if (BiomeDictionary.hasType(biome, Type.WATER)) {
 				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.FISHING_ROD));
-				human.addMemory("FIGHT", new EntitySpider(base.world));
 			}
 		}
 		if (biome.getDefaultTemperature() < -0.1F) {

@@ -30,7 +30,8 @@ public class RenderMale extends RenderBiped<EntityMale> {
 			GlStateManager.scale(human.getSize(), human.getSize(), human.getSize());
 		}
 		if (human.isSleeping()) {
-			GlStateManager.rotate(90.0F, 0, 0, 1);
+			GlStateManager.rotate(180.0F, 0, 0, 1);
+			GlStateManager.rotate(90.0F, 1, 0, 0);
 		}
 	}
 	@Override
