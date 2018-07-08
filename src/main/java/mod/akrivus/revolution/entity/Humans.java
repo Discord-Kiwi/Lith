@@ -101,20 +101,6 @@ public class Humans {
 		human.setAgeFactor(base.getAgeFactor());
 		human.setTribe(base.getTribeID());
 		Biome biome = base.world.getBiome(base.getPosition());
-		if (human instanceof EntityMale && human.isOldEnoughToBreed()) {
-			if (BiomeDictionary.hasType(biome, Type.MOUNTAIN)) {
-				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.STONE_SWORD));
-			}
-			if (BiomeDictionary.hasType(biome, Type.FOREST)) {
-				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.WOODEN_SWORD));
-			}
-			if (BiomeDictionary.hasType(biome, Type.PLAINS)) {
-				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.BOW));
-			}
-			if (BiomeDictionary.hasType(biome, Type.WATER)) {
-				human.setHeldItem(EnumHand.MAIN_HAND, new ItemStack(Items.FISHING_ROD));
-			}
-		}
 		if (biome.getDefaultTemperature() < -0.1F) {
 			human.setItemStackToSlot(EntityEquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
 		}

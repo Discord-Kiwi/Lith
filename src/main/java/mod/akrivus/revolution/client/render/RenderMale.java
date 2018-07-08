@@ -32,6 +32,7 @@ public class RenderMale extends RenderBiped<EntityMale> {
 		if (human.isSleeping()) {
 			GlStateManager.rotate(180.0F, 0, 0, 1);
 			GlStateManager.rotate(90.0F, 1, 0, 0);
+			GlStateManager.translate(0, 0, -0.2);
 		}
 	}
 	@Override

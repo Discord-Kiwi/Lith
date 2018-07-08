@@ -11,13 +11,15 @@ import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.data.Tribe;
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.entity.ai.EntityAIAvoidFromMemory;
-import mod.akrivus.revolution.entity.ai.EntityAIBeAlert;
 import mod.akrivus.revolution.entity.ai.EntityAIFindHome;
+import mod.akrivus.revolution.entity.ai.EntityAIFollowMom;
+import mod.akrivus.revolution.entity.ai.EntityAIForage;
 import mod.akrivus.revolution.entity.ai.EntityAIGoHome;
 import mod.akrivus.revolution.entity.ai.EntityAIGoToMemory;
 import mod.akrivus.revolution.entity.ai.EntityAIPickUpItems;
 import mod.akrivus.revolution.entity.ai.EntityAISleep;
 import mod.akrivus.revolution.entity.ai.EntityAISpeak;
+import mod.akrivus.revolution.entity.ai.EntityAIStepAroundMemory;
 import mod.akrivus.revolution.entity.ai.EntityAITargetFromMemory;
 import mod.akrivus.revolution.lang.PhonicsHelper;
 import net.minecraft.block.Block;
@@ -26,8 +28,10 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
+import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWander;
+import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
@@ -35,6 +39,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -81,17 +86,24 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public EntityHuman(World world) {
 		super(world);
 		this.setCanPickUpLoot(true);
+		this.tasks.addTask(0, new EntityAISleep(this));
 		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(0, new EntityAISpeak(this, 8));
-		this.tasks.addTask(1, new EntityAISleep(this));
-		this.tasks.addTask(1, new EntityAIPickUpItems(this, 0.8D));
+		this.tasks.addTask(0, new EntityAISpeak(this, 4));
+		// ask for food
+		// eat
 		this.tasks.addTask(1, new EntityAIGoHome(this));
-		this.tasks.addTask(2, new EntityAIAttackMelee(this, 0.8F, false));
-		this.tasks.addTask(2, new EntityAIFindHome(this));
-		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 0.8D));
+		this.tasks.addTask(1, new EntityAIFollowMom(this, 0.8D));
+		this.tasks.addTask(2, new EntityAIAvoidFromMemory(this, 8, 0.8D));
+		this.tasks.addTask(2, new EntityAIStepAroundMemory(this));
+		this.tasks.addTask(3, new EntityAIPickUpItems(this, 0.8D));
+		this.tasks.addTask(3, new EntityAIAttackMelee(this, 0.8F, false));
+		this.tasks.addTask(3, new EntityAIForage(this));
+		this.tasks.addTask(4, new EntityAIFindHome(this));
 		this.tasks.addTask(4, new EntityAIGoToMemory(this));
-		this.tasks.addTask(6, new EntityAIBeAlert(this, 12));
+		// mating AIs (sexually dimorphic probs)
+		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityLivingBase.class, 12));
 		this.tasks.addTask(7, new EntityAIWander(this, 0.5F));
+		this.tasks.addTask(8, new EntityAILookIdle(this));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.memories = new ArrayList<UUID>();
@@ -106,6 +118,10 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.dataManager.register(SLEEPING, false);
 		this.experienceValue = 0;
 		this.foodLevels = 20;
+	}
+	@Override
+	public boolean isAIDisabled() {
+		return false;
 	}
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
@@ -212,6 +228,9 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public void onLivingUpdate() {
 		super.onLivingUpdate();
+		if ((this.world.getWorldTime() % 24000) < 14000 && this.isSleeping()) {
+			this.setIsSleeping(false);
+		}
 		if (!this.world.isRemote) {
 			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
 				this.setTribeName(this.getTribe().getName());
@@ -290,8 +309,21 @@ public class EntityHuman extends EntityMob implements IAnimals {
 						human.setRevengeTarget(target);
 					}
 				}
-				this.setIsSleeping(false);
 			}
+			else {
+				boolean learned = true;
+				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+				for (UUID id : this.memories) {
+					if (this.getPosition().equals(collective.get(id).getAvoid())) {
+						learned = false;
+						break;
+					}
+				}
+				if (learned) {
+					this.addMemory("AVOID", this.getPosition());
+				}
+			}
+			this.setIsSleeping(false);
 		}
 		return hurt;
 	}
@@ -308,6 +340,13 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		}
 		if (learned) {
 			this.addMemory("FIGHT", target);
+		}
+	}
+	@Override
+	public void heal(float healAmount) {
+		super.heal(healAmount);
+		if (healAmount > 1.0F) {
+			this.addMemory("GOTO", this.getPosition());
 		}
 	}
 	@Override
@@ -343,11 +382,14 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected void updateEquipmentIfNeeded(EntityItem item) {
         ItemStack itemstack = item.getItem();
         ItemStack other = this.inventory.addItem(itemstack);
-        if (other.isEmpty()) {
-            item.setDead();
+        if (itemstack.getItem() instanceof ItemFood) {
+			this.addMemory("GOTO", this.getPosition());
+		}
+        if (!other.isEmpty()) {
+        	itemstack.setCount(other.getCount());
         }
         else {
-            itemstack.setCount(other.getCount());
+            item.setDead();
         }
     }
 	@Override

@@ -13,30 +13,30 @@ import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIGoToMemory extends EntityAIBase {
+public class EntityAIStepAroundMemory extends EntityAIBase {
     protected EntityHuman human;
     protected BlockPos lastPos;
     protected BlockPos home;
-    public EntityAIGoToMemory(EntityHuman human) {
+    public EntityAIStepAroundMemory(EntityHuman human) {
         this.human = human;
         this.setMutexBits(1);
     }
     @Override
     public boolean shouldExecute() {
-    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 8000) {
+    	if (!this.human.isSleeping()) {
 	        Map<UUID, Memory> memories = LearnedData.get(this.human.world).memories;
 	        List<BlockPos> pos = new ArrayList<BlockPos>();
 	        for (UUID id : this.human.getMemories()) {
-	        	if (memories.get(id).getGoto().getY() > 0) {
-	        		pos.add(memories.get(id).getGoto());
+	        	if (memories.get(id).getAvoid().getY() > 0) {
+	        		pos.add(memories.get(id).getAvoid());
 	        	}
 	        }
-	        double maxDistance = 262144;
+	        double maxDistance = 256;
 	        this.lastPos = this.home;
 	        for (BlockPos loc : pos) {
 	        	double dist = this.human.getPosition().distanceSq(loc);
 	        	if (loc != this.lastPos) {
-		        	if (dist > 2.0F && dist < maxDistance) {
+		        	if (dist < maxDistance) {
 		        		maxDistance = this.human.getPosition().distanceSq(loc);
 		        		this.home = loc;
 		        	}
@@ -46,36 +46,24 @@ public class EntityAIGoToMemory extends EntityAIBase {
     	return this.home != this.lastPos;
     }
     @Override
-    public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) > 0.0F;
+    public void startExecuting() {
+		Vec3d pos = RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.human, 16, 4, new Vec3d(this.home.getX(), this.home.getY(), this.home.getZ()));
+        if (pos != null) {
+            this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
+        }
     }
     @Override
-    public void startExecuting() {
-    	if (this.human.getDistanceSq(this.home) > 256) {
-    		Vec3d pos = RandomPositionGenerator.findRandomTargetBlockTowards(this.human, 16, 4, new Vec3d(this.home.getX(), this.home.getY(), this.home.getZ()));
-            if (pos != null) {
-                this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
-            }
-    	}
-    	else {
-    		this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
-    	}
+    public boolean shouldContinueExecuting() {
+    	return this.human.getDistanceSq(this.home) < 256.0F;
     }
     @Override
     public void updateTask() {
-    	if (this.human.getDistanceSq(this.home) > 256) {
-    		Vec3d pos = RandomPositionGenerator.findRandomTargetBlockTowards(this.human, 16, 4, new Vec3d(this.home.getX(), this.home.getY(), this.home.getZ()));
-            if (pos != null) {
-                this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
-            }
-    	}
-    	else if (this.human.getNavigator().noPath()) {
+    	if (this.human.getNavigator().noPath()) {
     		this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
     	}
     }
     @Override
     public void resetTask() {
     	this.human.getNavigator().clearPath();
-    	this.home = null;
     }
 }

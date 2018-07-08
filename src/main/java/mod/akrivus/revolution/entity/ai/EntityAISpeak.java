@@ -25,7 +25,7 @@ public class EntityAISpeak extends EntityAIBase {
 	            	EntityHuman e = list.get(i);
 	            	if (e != this.entity) { 
 		            	if (e.canEntityBeSeen(this.entity) && e.getTribeID().equals(this.entity.getTribeID())) {
-		            		if (e.getMemories().size() != this.entity.getMemories().size()) {
+		            		if (e.getMemories().equals(this.entity.getMemories())) {
 		            			this.closestEntity = e;
 		            		}
 		            	}
@@ -39,11 +39,8 @@ public class EntityAISpeak extends EntityAIBase {
     @Override
     public void startExecuting() {
         List<UUID> untaughtMemories = new ArrayList<UUID>();
-        for (UUID id : this.entity.getMemories()) {
-			if (!this.closestEntity.getMemories().contains(id)) {
-				untaughtMemories.add(id);
-			}
-		}
+        untaughtMemories.addAll(this.entity.getMemories());
+        untaughtMemories.removeAll(this.closestEntity.getMemories());
         for (UUID id : untaughtMemories) {
         	this.closestEntity.learnMemory(id);
         }
