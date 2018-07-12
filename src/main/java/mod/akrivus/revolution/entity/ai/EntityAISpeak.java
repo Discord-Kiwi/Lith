@@ -25,7 +25,7 @@ public class EntityAISpeak extends EntityAIBase {
 	            	EntityHuman e = list.get(i);
 	            	if (e != this.entity) { 
 		            	if (e.canEntityBeSeen(this.entity) && e.getTribeID().equals(this.entity.getTribeID())) {
-		            		if (e.getMemories().equals(this.entity.getMemories())) {
+		            		if (!e.getMemories().equals(this.entity.getMemories())) {
 		            			this.closestEntity = e;
 		            		}
 		            	}

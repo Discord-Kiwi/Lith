@@ -11,6 +11,7 @@ import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.data.Tribe;
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.entity.ai.EntityAIAvoidFromMemory;
+import mod.akrivus.revolution.entity.ai.EntityAIEat;
 import mod.akrivus.revolution.entity.ai.EntityAIFindHome;
 import mod.akrivus.revolution.entity.ai.EntityAIFollowMom;
 import mod.akrivus.revolution.entity.ai.EntityAIForage;
@@ -36,6 +37,7 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
@@ -89,8 +91,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(0, new EntityAISleep(this));
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(0, new EntityAISpeak(this, 4));
-		// ask for food
-		// eat
+		this.tasks.addTask(1, new EntityAIEat(this, 8));
 		this.tasks.addTask(1, new EntityAIGoHome(this));
 		this.tasks.addTask(1, new EntityAIFollowMom(this, 0.8D));
 		this.tasks.addTask(2, new EntityAIAvoidFromMemory(this, 8, 0.8D));
@@ -341,6 +342,22 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		if (learned) {
 			this.addMemory("FIGHT", target);
 		}
+	}
+	@Override
+	public void onDeath(DamageSource cause) {
+		if (!this.world.isRemote) {
+			this.dropItem(Items.BONE, 2 + this.rand.nextInt(4));
+			if (this.isBurning()) {
+				this.dropItem(Items.COOKED_PORKCHOP, 3 + this.rand.nextInt(6));
+			}
+			else {
+				this.dropItem(Items.PORKCHOP, 3 + this.rand.nextInt(6));
+			}
+			for (int i = 0; i < this.inventory.getSizeInventory(); ++i) {
+				this.entityDropItem(this.inventory.getStackInSlot(i), 0.0F);
+			}
+		}
+		super.onDeath(cause);
 	}
 	@Override
 	public void heal(float healAmount) {
