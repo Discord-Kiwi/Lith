@@ -56,6 +56,10 @@ public class EntityAIEat extends EntityAIBase {
         this.stack.shrink(1);
     }
     @Override
+    public boolean shouldContinueExecuting() {
+    	return false;
+    }
+    @Override
     public void resetTask() {
         this.stack = null;
     }

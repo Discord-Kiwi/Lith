@@ -54,13 +54,7 @@ public class EntityAIStepAroundMemory extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) < 256.0F;
-    }
-    @Override
-    public void updateTask() {
-    	if (this.human.getNavigator().noPath()) {
-    		this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
-    	}
+    	return this.human.getDistanceSq(this.home) < 256.0F || !this.human.getNavigator().noPath();
     }
     @Override
     public void resetTask() {

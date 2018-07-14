@@ -18,15 +18,18 @@ public class EntityAISpeak extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (!this.entity.isSleeping()) {
+    	if (this.entity.isSleeping()) {
 	        if (this.entity.getAttackTarget() == null && this.entity.isOldEnoughToBreed()) {
 	            List<EntityHuman> list = this.entity.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.entity.getEntityBoundingBox().grow(this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2), 3.0D, this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2)));
 	            for (int i = 0; i < list.size(); ++i) {
 	            	EntityHuman e = list.get(i);
 	            	if (e != this.entity) { 
 		            	if (e.canEntityBeSeen(this.entity) && e.getTribeID().equals(this.entity.getTribeID())) {
-		            		if (!e.getMemories().equals(this.entity.getMemories())) {
-		            			this.closestEntity = e;
+		            		for (UUID mem : this.entity.getMemories()) {
+		            			if (!e.getMemories().contains(mem)) {
+		            				this.closestEntity = e;
+		            				break;
+		            			}
 		            		}
 		            	}
 	            	}
@@ -34,6 +37,10 @@ public class EntityAISpeak extends EntityAIBase {
 	            return this.closestEntity != null;
 	        }
     	}
+    	return false;
+    }
+    @Override
+    public boolean shouldContinueExecuting() {
     	return false;
     }
     @Override

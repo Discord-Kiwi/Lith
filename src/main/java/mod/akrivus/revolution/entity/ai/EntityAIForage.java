@@ -14,9 +14,9 @@ import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemFood;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 public class EntityAIForage extends EntityAIBase {
     protected EntityHuman human;
@@ -55,7 +55,11 @@ public class EntityAIForage extends EntityAIBase {
 		        }
 	        }
 	        if (pos.isEmpty()) {
-	        	this.home = new BlockPos(RandomPositionGenerator.findRandomTarget(this.human, 16, 4));
+	        	Vec3d vec = RandomPositionGenerator.findRandomTarget(this.human, 16, 4);
+	        	if (vec == null) {
+	        		return false;
+	        	}
+	        	this.home = new BlockPos(vec);
 	        	this.wandering = true;
 	        }
 	        else {
@@ -74,7 +78,7 @@ public class EntityAIForage extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) > 4.0F && (!this.human.world.isAirBlock(this.home) || this.wandering);
+    	return (!this.human.world.isAirBlock(this.home) || this.wandering) && (this.human.getTribe().isHomeless() || this.human.getDistanceSq(this.human.getTribe().getHome()) < 262144);
     }
     @Override
     public void startExecuting() {
@@ -82,23 +86,28 @@ public class EntityAIForage extends EntityAIBase {
     }
     @Override
     public void updateTask() {
-    	if (this.human.getDistanceSq(this.home) < 4.0F) {
+    	if (this.human.getNavigator().noPath()) {
     		if (!this.wandering) {
-	    		Item item = this.human.world.getBlockState(this.home).getBlock().getItemDropped(this.human.world.getBlockState(this.home), this.human.world.rand, 1);
-	    		if (item instanceof ItemFood) {
-	    			boolean learned = true;
-					Map<UUID, Memory> collective = LearnedData.get(human.world).memories;
-					for (UUID id : this.human.getMemories()) {
-						if (item.getUnlocalizedName().equals(collective.get(id).getBreak())) {
-							learned = false;
-							break;
+    			if (this.human.getDistanceSq(this.home) < 2.0D) {
+		    		Item item = this.human.world.getBlockState(this.home).getBlock().getItemDropped(this.human.world.getBlockState(this.home), this.human.world.rand, 1);
+		    		if (item instanceof ItemFood) {
+		    			boolean learned = true;
+						Map<UUID, Memory> collective = LearnedData.get(human.world).memories;
+						for (UUID id : this.human.getMemories()) {
+							if (item.getUnlocalizedName().equals(collective.get(id).getBreak())) {
+								learned = false;
+								break;
+							}
 						}
-					}
-					if (learned) {
-						this.human.addMemory("BREAK", item);
-					}
-	    		}
-	    		this.human.world.destroyBlock(this.home, true);
+						if (learned) {
+							this.human.addMemory("BREAK", item);
+						}
+		    		}
+		    		this.human.world.destroyBlock(this.home, true);
+    			}
+    			else {
+    		    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
+    			}
     		}
     	}
     }

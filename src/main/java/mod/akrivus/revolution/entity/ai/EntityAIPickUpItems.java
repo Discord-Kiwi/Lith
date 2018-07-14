@@ -31,21 +31,16 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	}
 	@Override
 	public boolean shouldContinueExecuting() {
-		return this.item != null && !this.item.isDead && !this.human.getNavigator().noPath();
+		return false;
 	}
 	@Override
 	public void startExecuting() {
 		this.human.getLookHelper().setLookPositionWithEntity(this.item, 30.0F, 30.0F);
+		this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
 	}
 	@Override
 	public void resetTask() {
 		this.human.getNavigator().clearPath();
 		this.item = null;
-	}
-	@Override
-	public void updateTask() {
-		if (this.human.getDistanceSq(this.item) > 0.0F) {
-		   	this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
-		}
 	}
 }

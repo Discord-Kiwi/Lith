@@ -36,7 +36,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
 	        for (BlockPos loc : pos) {
 	        	double dist = this.human.getPosition().distanceSq(loc);
 	        	if (loc != this.lastPos) {
-		        	if (dist > 2.0F && dist < maxDistance) {
+		        	if (dist > Math.min(256.0D, Math.pow(2.0D, pos.size())) && dist < maxDistance) {
 		        		maxDistance = this.human.getPosition().distanceSq(loc);
 		        		this.home = loc;
 		        	}
@@ -47,7 +47,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) > 0.0F;
+    	return this.human.getDistanceSq(this.home) > 0.0F || !this.human.getNavigator().noPath();
     }
     @Override
     public void startExecuting() {

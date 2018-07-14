@@ -14,6 +14,7 @@ import mod.akrivus.revolution.entity.ai.EntityAIAvoidFromMemory;
 import mod.akrivus.revolution.entity.ai.EntityAIEat;
 import mod.akrivus.revolution.entity.ai.EntityAIFindHome;
 import mod.akrivus.revolution.entity.ai.EntityAIFollowMom;
+import mod.akrivus.revolution.entity.ai.EntityAIFollowOldest;
 import mod.akrivus.revolution.entity.ai.EntityAIForage;
 import mod.akrivus.revolution.entity.ai.EntityAIGoHome;
 import mod.akrivus.revolution.entity.ai.EntityAIGoToMemory;
@@ -29,10 +30,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
-import net.minecraft.entity.ai.EntityAILookIdle;
 import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWander;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
@@ -94,17 +92,15 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(1, new EntityAIEat(this, 8));
 		this.tasks.addTask(1, new EntityAIGoHome(this));
 		this.tasks.addTask(1, new EntityAIFollowMom(this, 0.8D));
-		this.tasks.addTask(2, new EntityAIAvoidFromMemory(this, 8, 0.8D));
-		this.tasks.addTask(2, new EntityAIStepAroundMemory(this));
-		this.tasks.addTask(3, new EntityAIPickUpItems(this, 0.8D));
-		this.tasks.addTask(3, new EntityAIAttackMelee(this, 0.8F, false));
+		this.tasks.addTask(2, new EntityAIPickUpItems(this, 0.8D));
+		this.tasks.addTask(2, new EntityAIAttackMelee(this, 0.8F, false));
 		this.tasks.addTask(3, new EntityAIForage(this));
-		this.tasks.addTask(4, new EntityAIFindHome(this));
-		this.tasks.addTask(4, new EntityAIGoToMemory(this));
+		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 0.8D));
+		this.tasks.addTask(3, new EntityAIStepAroundMemory(this));
+		this.tasks.addTask(4, new EntityAIFollowOldest(this, 0.8D));
+		this.tasks.addTask(5, new EntityAIFindHome(this));
+		this.tasks.addTask(5, new EntityAIGoToMemory(this));
 		// mating AIs (sexually dimorphic probs)
-		this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityLivingBase.class, 12));
-		this.tasks.addTask(7, new EntityAIWander(this, 0.5F));
-		this.tasks.addTask(8, new EntityAILookIdle(this));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.memories = new ArrayList<UUID>();
@@ -279,49 +275,54 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public boolean attackEntityFrom(DamageSource source, float amount) {
 		boolean hurt = super.attackEntityFrom(source, amount);
 		if (hurt) {
-			this.depleteFoodLevels(0.1F);
-			if (source.getTrueSource() instanceof EntityLivingBase) {
-				EntityLivingBase target = (EntityLivingBase)(source.getTrueSource());
-				boolean learned = true;
-				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
-				for (UUID id : this.memories) {
-					if (target.getClass().getSimpleName().equals(collective.get(id).getData())) {
-						learned = false;
-						break;
-					}
-				}
-				if (learned) {
-					int factor = this.getAge() - 24192000;
-					if (factor > 48384000 || factor < 0) {
-						this.addMemory("FEAR", target);
-					}
-					else {
-						if (factor / 48384000.0F < this.world.rand.nextDouble()) {
-							this.addMemory("FIGHT", target);
-						}
-						else {
-							this.addMemory("FEAR", target);
-						}
-					}
-				}
-				List<EntityHuman> list = this.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.getEntityBoundingBox().grow(8.0D, 4.0D, 8.0D));
-				for (EntityHuman human : list) {
-					if (human.getTribeID().equals(this.getTribeID())) {
-						human.setRevengeTarget(target);
-					}
-				}
+			if (source == DamageSource.STARVE) {
+				this.getTribe().setHomeless();
 			}
 			else {
-				boolean learned = true;
-				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
-				for (UUID id : this.memories) {
-					if (this.getPosition().equals(collective.get(id).getAvoid())) {
-						learned = false;
-						break;
+				this.depleteFoodLevels(0.1F);
+				if (source.getTrueSource() instanceof EntityLivingBase) {
+					EntityLivingBase target = (EntityLivingBase)(source.getTrueSource());
+					boolean learned = true;
+					Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+					for (UUID id : this.memories) {
+						if (target.getClass().getSimpleName().equals(collective.get(id).getData())) {
+							learned = false;
+							break;
+						}
+					}
+					if (learned) {
+						int factor = this.getAge() - 24192000;
+						if (factor > 48384000 || factor < 0) {
+							this.addMemory("FEAR", target);
+						}
+						else {
+							if (factor / 48384000.0F < this.world.rand.nextDouble()) {
+								this.addMemory("FIGHT", target);
+							}
+							else {
+								this.addMemory("FEAR", target);
+							}
+						}
+					}
+					List<EntityHuman> list = this.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.getEntityBoundingBox().grow(8.0D, 4.0D, 8.0D));
+					for (EntityHuman human : list) {
+						if (human.getTribeID().equals(this.getTribeID())) {
+							human.setRevengeTarget(target);
+						}
 					}
 				}
-				if (learned) {
-					this.addMemory("AVOID", this.getPosition());
+				else {
+					boolean learned = true;
+					Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+					for (UUID id : this.memories) {
+						if (this.getPosition().equals(collective.get(id).getAvoid())) {
+							learned = false;
+							break;
+						}
+					}
+					if (learned) {
+						this.addMemory("AVOID", this.getPosition());
+					}
 				}
 			}
 			this.setIsSleeping(false);

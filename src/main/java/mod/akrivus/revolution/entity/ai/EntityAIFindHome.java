@@ -33,7 +33,7 @@ public class EntityAIFindHome extends EntityAIBase {
     			for (int z = -8; z < 8; ++z) {
     				BlockPos pos = this.human.getPosition().add(new BlockPos(x, y, z));
     	    		if (this.human.world.isAirBlock(pos.up(2)) && this.human.world.isAirBlock(pos.up(1)) && !this.human.world.isAirBlock(pos)) {
-    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 256) {
+    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 262144) {
     	    				this.homeFound = true;
     	    				this.newPos = pos;
     	    			}
