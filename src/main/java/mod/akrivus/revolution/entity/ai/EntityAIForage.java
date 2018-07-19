@@ -29,7 +29,7 @@ public class EntityAIForage extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000) {
+    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 6000) {
 	        Map<UUID, Memory> memories = LearnedData.get(this.human.world).memories;
 	        List<String> blocks = new ArrayList<String>();
 	        for (UUID id : this.human.getMemories()) {

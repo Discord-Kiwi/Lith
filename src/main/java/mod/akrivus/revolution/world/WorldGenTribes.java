@@ -16,9 +16,6 @@ import net.minecraftforge.fml.common.IWorldGenerator;
 public class WorldGenTribes implements IWorldGenerator {
 	public static BlockPos lastGen = new BlockPos(0, 0, 0);
 	public static int lastDist = 0;
-	public WorldGenTribes() {
-		
-	}
 	@Override
 	public void generate(Random random, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider) {
 		if (world.provider.getDimensionType() == DimensionType.OVERWORLD) {

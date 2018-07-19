@@ -8,6 +8,7 @@ public class EntityFemale extends EntityHuman {
 	public int pregnantTicks;
 	public EntityFemale(World world) {
 		super(world);
+		this.fertilityFactor = 0.25F * world.rand.nextInt(4);
 	}
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
@@ -24,6 +25,10 @@ public class EntityFemale extends EntityHuman {
 	@Override
 	public boolean isOldEnoughToBreed() {
 		return this.getAge() > 18144000;
+	}
+	@Override
+	public boolean isAroused() {
+		return this.fertilityFactor == this.world.getCurrentMoonPhaseFactor() && this.isFertile();
 	}
 	public float getFertilityFactor() {
 		return this.fertilityFactor;

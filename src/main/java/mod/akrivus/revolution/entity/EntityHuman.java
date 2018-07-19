@@ -615,4 +615,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public boolean isOldEnoughToBreed() {
 		return false;
 	}
+	public boolean isAroused() {
+		return this.isFertile();
+	}
 }
