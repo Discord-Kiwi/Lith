@@ -25,7 +25,7 @@ public class EntityAIGoHome extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) > 1.0F && this.human.getRevengeTarget() == null;
+    	return !this.human.getTribe().isHomeless() && this.human.getDistanceSq(this.home) > 1.0F && this.human.getRevengeTarget() == null;
     }
     @Override
     public void startExecuting() {

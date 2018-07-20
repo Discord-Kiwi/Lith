@@ -43,6 +43,7 @@ public class EntityAIBreedInter extends EntityAIBase {
     public void updateTask() {
         this.male.getNavigator().tryMoveToEntityLiving(this.candidate, this.moveSpeed);
         if (this.male.getDistanceSq(this.candidate) < 2.0D) {
+        	this.candidate.setSickness(this.male.getImmuneStrength());
         	this.candidate.createChild(this.male);
         	this.candidate.setIsFertile(false);
         	List<UUID> femaleMemory = new ArrayList<UUID>();

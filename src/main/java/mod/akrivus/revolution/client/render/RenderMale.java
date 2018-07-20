@@ -1,6 +1,7 @@
 package mod.akrivus.revolution.client.render;
 
 import mod.akrivus.revolution.client.model.ModelMale;
+import mod.akrivus.revolution.client.render.layers.LayerBeard;
 import mod.akrivus.revolution.client.render.layers.LayerEyes;
 import mod.akrivus.revolution.client.render.layers.LayerHair;
 import mod.akrivus.revolution.client.render.layers.LayerSkin;
@@ -18,6 +19,7 @@ public class RenderMale extends RenderBiped<EntityMale> {
 		this.addLayer(new LayerBipedArmor(this));
 		this.addLayer(new LayerSkin(this));
 		this.addLayer(new LayerEyes(this));
+		this.addLayer(new LayerBeard(this));
 		this.addLayer(new LayerHair(this));
 	}
 	@Override

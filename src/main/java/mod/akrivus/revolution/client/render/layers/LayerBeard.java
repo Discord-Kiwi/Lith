@@ -1,6 +1,5 @@
 package mod.akrivus.revolution.client.render.layers;
 
-import mod.akrivus.revolution.entity.EntityFemale;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.GlStateManager;
@@ -8,31 +7,24 @@ import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.layers.LayerRenderer;
 import net.minecraft.util.ResourceLocation;
 
-public class LayerHair implements LayerRenderer<EntityHuman> {
-	public static final ResourceLocation[] FEMALE_HAIR = new ResourceLocation[] {
-		new ResourceLocation("revolution:textures/entities/female/hair_0.png"),
-		new ResourceLocation("revolution:textures/entities/female/hair_1.png"),
-		new ResourceLocation("revolution:textures/entities/female/hair_2.png"),
-		new ResourceLocation("revolution:textures/entities/female/hair_3.png"),
-		new ResourceLocation("revolution:textures/entities/female/hair_4.png")
-	};
-	public static final ResourceLocation[] MALE_HAIR = new ResourceLocation[] {
-		new ResourceLocation("revolution:textures/entities/male/hair_0.png"),
-		new ResourceLocation("revolution:textures/entities/male/hair_1.png"),
-		new ResourceLocation("revolution:textures/entities/male/hair_2.png"),
-		new ResourceLocation("revolution:textures/entities/male/hair_3.png"),
-		new ResourceLocation("revolution:textures/entities/male/hair_4.png")
+public class LayerBeard implements LayerRenderer<EntityHuman> {
+	public static final ResourceLocation[] FACE_HAIR = new ResourceLocation[] {
+		new ResourceLocation("revolution:textures/entities/male/face_0.png"),
+		new ResourceLocation("revolution:textures/entities/male/face_1.png"),
+		new ResourceLocation("revolution:textures/entities/male/face_2.png"),
+		new ResourceLocation("revolution:textures/entities/male/face_3.png"),
+		new ResourceLocation("revolution:textures/entities/male/face_4.png")
 	};
 	private final RenderLiving<? extends EntityHuman> renderer;
 	private final ModelBase model;
-	public LayerHair(RenderLiving<? extends EntityHuman> renderer) {
+	public LayerBeard(RenderLiving<? extends EntityHuman> renderer) {
 		this.renderer = renderer;
 		this.model = renderer.getMainModel();
 	}
 	@Override
 	public void doRenderLayer(EntityHuman human, float limbSwing, float limbSwingAmount, float partialTicks, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
-		if (!human.canLoseHair() || human.getAge() < 70560000 || human instanceof EntityFemale) {
-			this.renderer.bindTexture(human instanceof EntityFemale ? FEMALE_HAIR[human.getHairType()] : MALE_HAIR[human.getHairType()]);
+		if (human.canLoseHair() && human.isOldEnoughToBreed()) {
+			this.renderer.bindTexture(FACE_HAIR[human.getBeardType()]);
 			int color = human.getHairColor();
 			if (human.canHairGray() && human.getAge() > 70560000) {
 				color = 0xCCCCCC;

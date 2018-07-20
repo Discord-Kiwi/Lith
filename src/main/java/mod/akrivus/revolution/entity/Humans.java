@@ -6,22 +6,12 @@ import java.util.UUID;
 
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.lang.PhonicsHelper;
-import net.minecraft.entity.monster.EntitySkeleton;
-import net.minecraft.entity.monster.EntitySpider;
-import net.minecraft.entity.monster.EntityZombie;
-import net.minecraft.entity.passive.EntityCow;
-import net.minecraft.entity.passive.EntityPig;
-import net.minecraft.entity.passive.EntityRabbit;
-import net.minecraft.entity.passive.EntitySheep;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
 
 public class Humans {
 	private static final Random RANDOM = new Random();
@@ -40,6 +30,8 @@ public class Humans {
 			human.setHairColor(Humans.colorize(HUMAN_HAIR, world.rand.nextFloat(), human.getHairType() - 1));
 			human.setSkinColor(Humans.colorize(HUMAN_SKIN, world.rand.nextFloat()));
 			human.setEyeColor(Humans.colorize(HUMAN_EYES, world.rand.nextFloat()));
+			human.setCanLoseHair(world.rand.nextBoolean());
+			human.setBeardType(world.rand.nextInt(5));
 			human.setCanHairGray(world.rand.nextBoolean());
 			human.setImmuneStrength(world.rand.nextDouble());
 			human.setAltitudeStrength(world.rand.nextDouble());
@@ -95,6 +87,8 @@ public class Humans {
 			}, base.world.rand.nextFloat()));
 		human.setSkinColor(base.getSkinColor());
 		human.setCanHairGray(base.canHairGray());
+		human.setCanLoseHair(base.canLoseHair());
+		human.setBeardType(base.getBeardType());
 		human.setImmuneStrength(base.getImmuneStrength());
 		human.setAltitudeStrength(base.getAltitudeStrength());
 		human.setHeatStrength(base.getHeatStrength());

@@ -15,6 +15,7 @@ import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -82,7 +83,7 @@ public class EntityAIForage extends EntityAIBase {
     }
     @Override
     public void startExecuting() {
-    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
+    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);
     }
     @Override
     public void updateTask() {
@@ -104,9 +105,10 @@ public class EntityAIForage extends EntityAIBase {
 						}
 		    		}
 		    		this.human.world.destroyBlock(this.home, true);
+		    		this.human.swingArm(EnumHand.MAIN_HAND);
     			}
     			else {
-    		    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
+    		    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);
     			}
     		}
     	}

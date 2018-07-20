@@ -24,12 +24,15 @@ public class EntityAISpeak extends EntityAIBase {
 	            for (int i = 0; i < list.size(); ++i) {
 	            	EntityHuman e = list.get(i);
 	            	if (e != this.entity) { 
-		            	if (e.canEntityBeSeen(this.entity) && e.getTribeID().equals(this.entity.getTribeID())) {
-		            		for (UUID mem : this.entity.getMemories()) {
-		            			if (!e.getMemories().contains(mem)) {
-		            				this.closestEntity = e;
-		            				break;
-		            			}
+		            	if (e.canEntityBeSeen(this.entity)) {
+		            		e.setSickness(this.entity.getSickness());
+		            		if (e.getTribeID().equals(this.entity.getTribeID())) {
+			            		for (UUID mem : this.entity.getMemories()) {
+			            			if (!e.getMemories().contains(mem)) {
+			            				this.closestEntity = e;
+			            				break;
+			            			}
+			            		}
 		            		}
 		            	}
 	            	}

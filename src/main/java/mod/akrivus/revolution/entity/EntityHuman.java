@@ -31,6 +31,7 @@ import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
+import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
@@ -66,9 +67,11 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected static final DataParameter<Integer> HAIR_TYPE = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
 	protected static final DataParameter<Integer> EYE_COLOR = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
 	protected static final DataParameter<Integer> SKIN_COLOR = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
+	protected static final DataParameter<Integer> BEARD_TYPE = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
+	protected static final DataParameter<Boolean> HAIR_GRAYS = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
+	protected static final DataParameter<Boolean> HAIR_LOSS = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
 	protected static final DataParameter<Boolean> SLEEPING = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
 	
-	protected boolean canHairGray;
 	protected double immuneStrength;
 	protected double altitudeStrength;
 	protected double heatStrength;
@@ -90,15 +93,15 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(0, new EntityAISpeak(this, 4));
 		this.tasks.addTask(1, new EntityAIEat(this, 8));
-		this.tasks.addTask(1, new EntityAIGoHome(this));
-		this.tasks.addTask(1, new EntityAIFollowMom(this, 0.8D));
-		this.tasks.addTask(2, new EntityAIPickUpItems(this, 0.8D));
-		this.tasks.addTask(2, new EntityAIAttackMelee(this, 0.8F, false));
-		this.tasks.addTask(3, new EntityAIForage(this));
-		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 0.8D));
-		this.tasks.addTask(3, new EntityAIStepAroundMemory(this));
-		this.tasks.addTask(4, new EntityAIFollowOldest(this, 0.8D));
-		this.tasks.addTask(5, new EntityAIFindHome(this));
+		this.tasks.addTask(1, new EntityAIFindHome(this));
+		this.tasks.addTask(2, new EntityAIGoHome(this));
+		this.tasks.addTask(2, new EntityAIFollowMom(this, 0.7D));
+		this.tasks.addTask(3, new EntityAIPickUpItems(this, 0.6D));
+		this.tasks.addTask(3, new EntityAIAttackMelee(this, 0.8F, false));
+		this.tasks.addTask(4, new EntityAIForage(this));
+		this.tasks.addTask(4, new EntityAIAvoidFromMemory(this, 8, 0.8D));
+		this.tasks.addTask(5, new EntityAIStepAroundMemory(this));
+		this.tasks.addTask(5, new EntityAIFollowOldest(this, 0.7D));
 		this.tasks.addTask(5, new EntityAIGoToMemory(this));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
 		this.inventory = new InventoryBasic("inventory", false, 36);
@@ -111,6 +114,9 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.dataManager.register(HAIR_TYPE, 0);
 		this.dataManager.register(EYE_COLOR, 0);
 		this.dataManager.register(SKIN_COLOR, 0);
+		this.dataManager.register(BEARD_TYPE, 0);
+		this.dataManager.register(HAIR_GRAYS, false);
+		this.dataManager.register(HAIR_LOSS, false);
 		this.dataManager.register(SLEEPING, false);
 		this.experienceValue = 0;
 		this.foodLevels = 20;
@@ -132,7 +138,9 @@ public class EntityHuman extends EntityMob implements IAnimals {
         compound.setInteger("hairType", this.getHairType());
         compound.setInteger("eyeColor", this.getEyeColor());
         compound.setInteger("skinColor", this.getSkinColor());
+        compound.setInteger("beardType", this.getBeardType());
         compound.setBoolean("canHairGray", this.canHairGray());
+        compound.setBoolean("canLoseHair", this.canLoseHair());
         compound.setDouble("immuneStrength", this.getImmuneStrength());
         compound.setDouble("altitudeStrength", this.getAltitudeStrength());
         compound.setDouble("heatStrength", this.getHeatStrength());
@@ -171,8 +179,10 @@ public class EntityHuman extends EntityMob implements IAnimals {
        this.setHairColor(compound.getInteger("hairColor"));
        this.setHairType(compound.getInteger("hairType"));
        this.setEyeColor(compound.getInteger("eyeColor"));
+       this.setBeardType(compound.getInteger("beardType"));
        this.setSkinColor(compound.getInteger("skinColor"));
        this.setCanHairGray(compound.getBoolean("canHairGray"));
+       this.setCanLoseHair(compound.getBoolean("canLoseHair"));
        this.setImmuneStrength(compound.getDouble("immuneStrength"));
        this.setAltitudeStrength(compound.getDouble("altitudeStrength"));
        this.setHeatStrength(compound.getDouble("heatStrength"));
@@ -204,7 +214,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		livingdata = super.onInitialSpawn(difficulty, livingdata);
 		if (this.getTribeID() == null) {
 			EntityHuman base = Humans.gen(Humans.create(this.world, this.getPosition()), this.getClass());
-			this.setAge(60480000);
+			this.setAge(70560000);
 			this.setStats(base.getStrength(), base.getStamina(), base.getSpeed());
 			this.setSize(base.getSize() + ((base.world.rand.nextFloat() - 0.5F) / 10));
 			this.setHairType(base.getHairType());
@@ -212,6 +222,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			this.setEyeColor(base.getEyeColor());
 			this.setSkinColor(base.getSkinColor());
 			this.setCanHairGray(base.canHairGray());
+			this.setCanLoseHair(base.canLoseHair());
+			this.setBeardType(base.getBeardType());
 			this.setImmuneStrength(base.getImmuneStrength());
 			this.setAltitudeStrength(base.getAltitudeStrength());
 			this.setHeatStrength(base.getHeatStrength());
@@ -232,11 +244,17 @@ public class EntityHuman extends EntityMob implements IAnimals {
 				this.setTribeName(this.getTribe().getName());
 			}
 			if (this.ticksExisted % 2400 == 0) {
+				if (this.getImmuneFactor() > 0) {
+					this.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 4800));
+				}
 				Iterator<PotionEffect> it = this.getActivePotionEffects().iterator();
 				while (it.hasNext()) {
 					if (it.next().getPotion() == MobEffects.HUNGER) {
-						this.depleteFoodLevels(1.0F);
+						this.depleteFoodLevels(1.0F + this.getImmuneFactor());
 					}
+				}
+				if (this.world.rand.nextBoolean()) {
+					this.setImmuneStrength(this.getImmuneStrength() + this.getSickness());
 				}
 				if (this.foodLevels <= 0) {
 					this.attackEntityFrom(DamageSource.STARVE, 1.0F);
@@ -384,8 +402,11 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (!this.world.isRemote && hand == EnumHand.MAIN_HAND) {
 			player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
-			player.sendMessage(new TextComponentString("Approximately " + (this.getAge() / 2016000.0F) + " years old."));
-			player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (this.getHealth() / this.getMaxHealth() * 100) + "% healthy, " + (this.foodLevels / 20 * 100) + "% full."));
+			player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
+			player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + ((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + ((this.foodLevels / 20) * 100) + "% full."));
+			if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
+				this.setFirstName(player.getHeldItem(hand).getDisplayName());
+			}
 		}
 		return super.processInteract(player, hand);
 	}
@@ -499,10 +520,22 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.dataManager.set(SKIN_COLOR, skinColor);
 	}
 	public boolean canHairGray() {
-		return this.canHairGray;
+		return this.dataManager.get(HAIR_GRAYS);
 	}
 	public void setCanHairGray(boolean canHairGray) {
-		this.canHairGray = canHairGray;
+		this.dataManager.set(HAIR_GRAYS, canHairGray);
+	}
+	public int getBeardType() {
+		return this.dataManager.get(BEARD_TYPE);
+	}
+	public void setBeardType(int beardType) {
+		this.dataManager.set(BEARD_TYPE, beardType);
+	}
+	public boolean canLoseHair() {
+		return this.dataManager.get(HAIR_LOSS);
+	}
+	public void setCanLoseHair(boolean canLoseHair) {
+		this.dataManager.set(HAIR_LOSS, canLoseHair);
 	}
 	public double getImmuneStrength() {
 		return this.immuneStrength;
@@ -565,7 +598,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 				+ this.getAltitudeFactor()
 				+ this.getHeatFactor()
 				+ this.getImmuneFactor();
-		this.foodLevels -= Math.min(orig, base);
+		this.foodLevels -= Math.max(orig, base);
 	}
 	public void setFoodLevels(double foodLevels) {
 		this.foodLevels = foodLevels;
@@ -627,9 +660,9 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		human.setSkinColor((this.getSkinColor() + other.getSkinColor()) / 2);
 		human.setEyeColor((this.getEyeColor() + other.getEyeColor()) / 2);
 		human.setCanHairGray(other.canHairGray());
-		human.setImmuneStrength((this.getImmuneStrength() + other.getImmuneStrength()) / 2);
-		human.setAltitudeStrength((this.getAltitudeStrength() + other.getAltitudeStrength()) / 2);
-		human.setHeatStrength((this.getHeatStrength() + other.getHeatStrength()) / 2);
+		human.setImmuneStrength((this.getImmuneStrength() + other.getImmuneStrength()));
+		human.setAltitudeStrength((this.getAltitudeStrength() + other.getAltitudeStrength()));
+		human.setHeatStrength((this.getHeatStrength() + other.getHeatStrength()));
 		human.setAgeFactor((this.getAgeFactor() + other.getAgeFactor()) / 2);
 		human.setTribe(this.getTribeID());
 		human = Humans.gen(human, EntityHuman.class);

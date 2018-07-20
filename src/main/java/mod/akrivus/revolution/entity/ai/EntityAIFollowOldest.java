@@ -32,7 +32,7 @@ public class EntityAIFollowOldest extends EntityAIBase {
             if (this.elder == null) {
                 return false;
             }
-            else if (maxDistance < 9.0D) {
+            else if (maxDistance < 100.0D) {
                 return false;
             }
             else {
@@ -47,7 +47,7 @@ public class EntityAIFollowOldest extends EntityAIBase {
         }
         else {
             double dist = this.follower.getDistanceSq(this.elder);
-            return dist >= 9.0D && dist <= 256.0D;
+            return dist >= 100.0D && dist <= 256.0D;
         }
     }
     public void startExecuting() {
