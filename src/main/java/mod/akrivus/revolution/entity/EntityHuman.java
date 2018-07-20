@@ -100,7 +100,6 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(4, new EntityAIFollowOldest(this, 0.8D));
 		this.tasks.addTask(5, new EntityAIFindHome(this));
 		this.tasks.addTask(5, new EntityAIGoToMemory(this));
-		// mating AIs (sexually dimorphic probs)
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.memories = new ArrayList<UUID>();
@@ -205,7 +204,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		livingdata = super.onInitialSpawn(difficulty, livingdata);
 		if (this.getTribeID() == null) {
 			EntityHuman base = Humans.gen(Humans.create(this.world, this.getPosition()), this.getClass());
-			this.setAge((base.world.rand.nextInt(20) == 1 ? 60480000 : 0) + base.world.rand.nextInt(60480000));
+			this.setAge(60480000);
 			this.setStats(base.getStrength(), base.getStamina(), base.getSpeed());
 			this.setSize(base.getSize() + ((base.world.rand.nextFloat() - 0.5F) / 10));
 			this.setHairType(base.getHairType());
@@ -250,6 +249,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 				else {
 					this.depleteFoodLevels(0.01F);
 				}
+				this.setIsFertile(true);
 			}
 		}
 		this.setAge(this.getAge() + (int)(Math.ceil(2.0 * this.getAgeFactor())));
@@ -617,5 +617,44 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public boolean isAroused() {
 		return this.isFertile();
+	}
+	public void createChild(EntityHuman other) {
+		EntityHuman human = new EntityHuman(this.world);
+		human.setStats((this.getStrength() + other.getStrength()) / 2, (this.getStamina() + other.getStamina()) / 2, (this.getSpeed() + other.getSpeed()) / 2);
+		human.setSize((this.getSize() + other.getSize()) / 2);
+		human.setHairType((this.getHairType() + other.getHairType()) / 2);
+		human.setHairColor((this.getHairColor() + other.getHairColor()) / 2);
+		human.setSkinColor((this.getSkinColor() + other.getSkinColor()) / 2);
+		human.setEyeColor((this.getEyeColor() + other.getEyeColor()) / 2);
+		human.setCanHairGray(other.canHairGray());
+		human.setImmuneStrength((this.getImmuneStrength() + other.getImmuneStrength()) / 2);
+		human.setAltitudeStrength((this.getAltitudeStrength() + other.getAltitudeStrength()) / 2);
+		human.setHeatStrength((this.getHeatStrength() + other.getHeatStrength()) / 2);
+		human.setAgeFactor((this.getAgeFactor() + other.getAgeFactor()) / 2);
+		human.setTribe(this.getTribeID());
+		human = Humans.gen(human, EntityHuman.class);
+		human.setPosition(this.posX, this.posY, this.posZ);
+		human.onInitialSpawn(this.world.getDifficultyForLocation(this.getPosition()), null);
+		this.world.spawnEntity(human);
+		this.depleteFoodLevels(this.getFoodLevels());
+		Iterator<ItemStack> it = this.getArmorInventoryList().iterator();
+		while (it.hasNext()) {
+			ItemStack stack = it.next(); human.setItemStackToSlot(EntityHuman.getSlotForItemStack(stack), stack);
+		}
+	}
+	public double getGeneticDistance(EntityHuman other) {
+		double distance = Math.abs(this.getMaxHealth() - other.getMaxHealth());
+		distance += (this.getMemories().size() - Math.abs(this.getMemories().size() - other.getMemories().size())) / (this.getMemories().size() + 1);
+		distance += (this.getSkinColor() - Math.abs(this.getSkinColor() - other.getSkinColor())) / (this.getSkinColor() + 1);
+		distance += (this.getHairColor() - Math.abs(this.getHairColor() - other.getSkinColor())) / (this.getHairColor() + 1);
+		distance += (this.getHairType() - Math.abs(this.getHairType() - other.getHairType())) / (this.getHairType() + 1);
+		distance += (this.getStrength() - Math.abs(this.getStrength() - other.getStrength())) / (this.getStrength() + 1);
+		distance += (this.getSpeed() - Math.abs(this.getSpeed() - other.getSpeed())) / (this.getSpeed() + 1);
+		distance += (this.getSize() - Math.abs(this.getSize() - other.getSize())) / (this.getSize() + 1);
+		distance += (this.getImmuneStrength() - Math.abs(this.getImmuneStrength() - other.getImmuneStrength())) / (this.getImmuneStrength() + 1);
+		distance += (this.getAltitudeStrength() - Math.abs(this.getAltitudeStrength() - other.getAltitudeStrength())) / (this.getAltitudeStrength() + 1);
+		distance += (this.getHeatStrength() - Math.abs(this.getHeatStrength() - other.getHeatStrength())) / (this.getHeatStrength() + 1);
+		distance += (this.getAgeFactor() - Math.abs(this.getAgeFactor() - other.getAgeFactor())) / (this.getAgeFactor() + 1);
+		return distance;
 	}
 }

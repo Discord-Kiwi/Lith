@@ -64,6 +64,7 @@ public class EntityAIFollowMom extends EntityAIBase {
     public void updateTask() {
         if (--this.delayCounter <= 0) {
             this.child.getNavigator().tryMoveToEntityLiving(this.mother, this.moveSpeed);
+            this.mother.setIsFertile(false);
             this.delayCounter = 10;
         }
     }

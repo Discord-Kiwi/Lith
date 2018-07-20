@@ -1,5 +1,6 @@
 package mod.akrivus.revolution.entity;
 
+import mod.akrivus.revolution.entity.ai.EntityAIBreedIntra;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 
@@ -9,6 +10,11 @@ public class EntityFemale extends EntityHuman {
 	public EntityFemale(World world) {
 		super(world);
 		this.fertilityFactor = 0.25F * world.rand.nextInt(4);
+		this.tasks.addTask(6, new EntityAIBreedIntra(this, 0.5));
+	}
+	@Override
+	public boolean isAIDisabled() {
+		return false;
 	}
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {

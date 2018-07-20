@@ -1,5 +1,6 @@
 package mod.akrivus.revolution.entity;
 
+import mod.akrivus.revolution.entity.ai.EntityAIBreedInter;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
@@ -11,6 +12,11 @@ public class EntityMale extends EntityHuman {
 	protected boolean canLoseHair;
 	public EntityMale(World world) {
 		super(world);
+		this.tasks.addTask(6, new EntityAIBreedInter(this, 0.3D));
+	}
+	@Override
+	public boolean isAIDisabled() {
+		return false;
 	}
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
