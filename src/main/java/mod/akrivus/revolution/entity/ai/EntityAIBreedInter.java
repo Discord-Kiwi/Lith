@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import mod.akrivus.revolution.Revolution;
 import mod.akrivus.revolution.entity.EntityFemale;
+import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.EntityMale;
 import net.minecraft.entity.ai.EntityAIBase;
 
@@ -43,9 +45,12 @@ public class EntityAIBreedInter extends EntityAIBase {
     public void updateTask() {
         this.male.getNavigator().tryMoveToEntityLiving(this.candidate, this.moveSpeed);
         if (this.male.getDistanceSq(this.candidate) < 2.0D) {
+        	EntityHuman child = this.candidate.createChild(this.male);
+    		this.candidate.depleteFoodLevels(this.candidate.getFoodLevels());
         	this.candidate.setSickness(this.male.getImmuneStrength());
-        	this.candidate.createChild(this.male);
+    		this.candidate.world.spawnEntity(child);
         	this.candidate.setIsFertile(false);
+        	this.candidate.dropItem(Revolution.MAN_MEAT, 1);
         	List<UUID> femaleMemory = new ArrayList<UUID>();
         	femaleMemory.addAll(this.male.getMemories());
         	femaleMemory.removeAll(this.candidate.getMemories());

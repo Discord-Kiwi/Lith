@@ -1,5 +1,8 @@
 entity.female.name=Female
 entity.male.name=Male
 
-item.human_flesh.name=Human Flesh
+item.man_meat.name=Man Meat
+item.cooked_man_meat.name=Cooked Man Meat
 item.spawn_wand.name=Spawn Wand
+item.mutator.name=Mutator
+item.generator.name=Generator

@@ -1,8 +1,11 @@
 package mod.akrivus.revolution.item;
 
+import java.util.List;
+
 import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.Humans;
 import mod.akrivus.revolution.world.WorldGenTribes;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -28,7 +31,7 @@ public class ItemSpawnWand extends Item {
 		ItemStack stack = player.getHeldItem(hand);
 		if (!world.isRemote) {
 			EntityHuman base = Humans.create(world, player.getPosition());
-			for (int count = 0; count < WorldGenTribes.lastDist; ++count) {
+			for (int count = 0; count < world.rand.nextInt(4) + 8; ++count) {
 				EntityHuman human = Humans.gen(base, EntityHuman.class);
 				human.setPosition(player.getPosition().getX() + (world.rand.nextInt(8) - 8), world.getTopSolidOrLiquidBlock(player.getPosition()).getY() + 1, player.getPosition().getZ() + (world.rand.nextInt(8) - 8));
 				human.onInitialSpawn(world.getDifficultyForLocation(player.getPosition()), null);
@@ -38,6 +41,11 @@ public class ItemSpawnWand extends Item {
 		}
 		player.swingArm(hand);
 		return new ActionResult<ItemStack>(EnumActionResult.PASS, stack);
+	}
+	@Override
+	@SideOnly(Side.CLIENT)
+	public void addInformation(ItemStack stack, World world, List<String> tooltip, ITooltipFlag flag) {
+		tooltip.add("Creates a new tribe of people around you.");
 	}
 	@Override
 	@SideOnly(Side.CLIENT)

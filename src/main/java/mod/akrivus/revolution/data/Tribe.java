@@ -1,6 +1,7 @@
 package mod.akrivus.revolution.data;
 
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 public class Tribe {
 	private boolean homeless = true;
@@ -17,22 +18,30 @@ public class Tribe {
 	public BlockPos getOldHome() {
 		return this.oldHome;
 	}
-	public void setOldHome(BlockPos oldHome) {
+	public void setOldHome(BlockPos oldHome, World world) {
 		this.oldHome = oldHome;
+		TribeData.get(world).markDirty();
 	}
 	public BlockPos getHome() {
 		return this.home;
 	}
-	public void setHome(BlockPos home) {
-		this.home = home;
-		this.homeless = false;
+	public void setHome(BlockPos home, World world) {
+		this.home = home; this.homeless = false;
+		if (world != null) {
+			TribeData.get(world).markDirty();
+		}
 	}
-	public void setHomeless() {
-		this.oldHome = this.home;
-		this.homeless = true;
+	public void setHomeless(World world) {
+		this.oldHome = this.home; this.homeless = true;
+		if (world != null) {
+			TribeData.get(world).markDirty();
+		}
 	}
-	public void setHomeless(boolean homeless) {
+	public void setHomeless(boolean homeless, World world) {
 		this.homeless = homeless;
+		if (world != null) {
+			TribeData.get(world).markDirty();
+		}
 	}
 	public boolean isHomeless() {
 		return this.homeless;

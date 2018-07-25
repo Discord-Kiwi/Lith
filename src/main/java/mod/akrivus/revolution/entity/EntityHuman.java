@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import mod.akrivus.revolution.Revolution;
 import mod.akrivus.revolution.data.LearnedData;
 import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.data.Tribe;
@@ -31,7 +32,6 @@ import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
@@ -294,7 +294,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		boolean hurt = super.attackEntityFrom(source, amount);
 		if (hurt) {
 			if (source == DamageSource.STARVE) {
-				this.getTribe().setHomeless();
+				this.getTribe().setHomeless(this.world);
 			}
 			else {
 				this.depleteFoodLevels(0.1F);
@@ -342,6 +342,11 @@ public class EntityHuman extends EntityMob implements IAnimals {
 						this.addMemory("AVOID", this.getPosition());
 					}
 				}
+				if (!this.getTribe().isHomeless()) {
+					if (this.getPosition().distanceSq(this.getTribe().getHome()) < 16.0F) {
+						this.getTribe().setHomeless(this.world);
+					}
+				}
 			}
 			this.setIsSleeping(false);
 		}
@@ -367,10 +372,10 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		if (!this.world.isRemote) {
 			this.dropItem(Items.BONE, 2 + this.rand.nextInt(4));
 			if (this.isBurning()) {
-				this.dropItem(Items.COOKED_PORKCHOP, 3 + this.rand.nextInt(6));
+				this.dropItem(Revolution.COOKED_MAN_MEAT, 3 + this.rand.nextInt(6));
 			}
 			else {
-				this.dropItem(Items.PORKCHOP, 3 + this.rand.nextInt(6));
+				this.dropItem(Revolution.MAN_MEAT, 3 + this.rand.nextInt(6));
 			}
 			for (int i = 0; i < this.inventory.getSizeInventory(); ++i) {
 				this.entityDropItem(this.inventory.getStackInSlot(i), 0.0F);
@@ -406,6 +411,12 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + ((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + ((this.foodLevels / 20) * 100) + "% full."));
 			if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
 				this.setFirstName(player.getHeldItem(hand).getDisplayName());
+			}
+			if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
+				this.generate();
+			}
+			if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
+				this.mutate();
 			}
 		}
 		return super.processInteract(player, hand);
@@ -452,18 +463,18 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		return true;
 	}
 	public void setStats(double strength, double stamina, double speed) {
-		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * strength + 1.0D);
-		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.2D * speed + 0.3D);
-		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(40.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * Math.min(18.0D, strength) + 1.0D);
+		this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(Math.max(20.0D, Math.min(120.0D, stamina * 20.0D + 20.0D)));
+		this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.2D * Math.min(3.0D, speed) + 0.3D);
 	}
 	public double getStrength() {
-		return this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue() / 1.0D - 1.0D;
+		return (this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).getBaseValue() - 1.0D) / 1.0D;
 	}
 	public double getStamina() {
-		return this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() / 20.0D - 20.0D;
+		return (this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() - 20.0D) / 20.0D;
 	}
 	public double getSpeed() {
-		return this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() / 0.2D - 0.3D;
+		return (this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() - 0.3D) / 0.2D;
 	}
 	public String getFirstName() {
 		return this.dataManager.get(FIRST_NAME);
@@ -651,14 +662,53 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public boolean isAroused() {
 		return this.isFertile();
 	}
-	public void createChild(EntityHuman other) {
+	public void mutate() {
+		EntityHuman human = Humans.gen(this, this.getClass());
+		human = this.createChild(human);
+		this.setStats(human.getStrength(), human.getStamina(), human.getSpeed());
+		this.setSize(human.getSize());
+		this.setHairType(human.getHairType());
+		this.setHairColor(Humans.colorize(new int[] {
+				Humans.HUMAN_HAIR[human.world.rand.nextInt(Humans.HUMAN_HAIR.length)],
+				human.getHairColor()
+			}, 1 + human.world.rand.nextFloat()));
+		this.setSkinColor(Humans.colorize(new int[] {
+				Humans.HUMAN_SKIN[human.world.rand.nextInt(Humans.HUMAN_SKIN.length)],
+				human.getSkinColor()
+			}, 1 + human.world.rand.nextFloat()));
+		this.setEyeColor(Humans.colorize(new int[] {
+				Humans.HUMAN_EYES[human.world.rand.nextInt(Humans.HUMAN_EYES.length)],
+				human.getEyeColor()
+			}, 1 + human.world.rand.nextFloat()));
+		this.setCanHairGray(human.canHairGray());
+		this.setImmuneStrength(human.getImmuneStrength());
+		this.setAltitudeStrength(human.getAltitudeStrength());
+		this.setHeatStrength(human.getHeatStrength());
+		this.setAgeFactor(human.getAgeFactor());
+	}
+	public void generate() {
+		EntityHuman human = Humans.gen(this, this.getClass());
+		human = this.createChild(human);
+		this.setStats(human.getStrength(), human.getStamina(), human.getSpeed());
+		this.setSize(human.getSize());
+		this.setHairType(human.getHairType());
+		this.setHairColor(human.getHairColor());
+		this.setSkinColor(human.getSkinColor());
+		this.setEyeColor(human.getEyeColor());
+		this.setCanHairGray(human.canHairGray());
+		this.setImmuneStrength(human.getImmuneStrength());
+		this.setAltitudeStrength(human.getAltitudeStrength());
+		this.setHeatStrength(human.getHeatStrength());
+		this.setAgeFactor(human.getAgeFactor());
+	}
+	public EntityHuman createChild(EntityHuman other) {
 		EntityHuman human = new EntityHuman(this.world);
 		human.setStats((this.getStrength() + other.getStrength()) / 2, (this.getStamina() + other.getStamina()) / 2, (this.getSpeed() + other.getSpeed()) / 2);
 		human.setSize((this.getSize() + other.getSize()) / 2);
 		human.setHairType((this.getHairType() + other.getHairType()) / 2);
-		human.setHairColor((this.getHairColor() + other.getHairColor()) / 2);
-		human.setSkinColor((this.getSkinColor() + other.getSkinColor()) / 2);
-		human.setEyeColor((this.getEyeColor() + other.getEyeColor()) / 2);
+		human.setHairColor(Humans.colorize(new int[] { this.getHairColor(), other.getHairColor() }, this.rand.nextFloat()));
+		human.setSkinColor(Humans.colorize(new int[] { this.getSkinColor(), other.getSkinColor() }, this.rand.nextFloat()));
+		human.setEyeColor(Humans.colorize(new int[] { this.getEyeColor(), other.getEyeColor() }, this.rand.nextFloat()));
 		human.setCanHairGray(other.canHairGray());
 		human.setImmuneStrength((this.getImmuneStrength() + other.getImmuneStrength()));
 		human.setAltitudeStrength((this.getAltitudeStrength() + other.getAltitudeStrength()));
@@ -668,12 +718,11 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		human = Humans.gen(human, EntityHuman.class);
 		human.setPosition(this.posX, this.posY, this.posZ);
 		human.onInitialSpawn(this.world.getDifficultyForLocation(this.getPosition()), null);
-		this.world.spawnEntity(human);
-		this.depleteFoodLevels(this.getFoodLevels());
 		Iterator<ItemStack> it = this.getArmorInventoryList().iterator();
 		while (it.hasNext()) {
 			ItemStack stack = it.next(); human.setItemStackToSlot(EntityHuman.getSlotForItemStack(stack), stack);
 		}
+		return human;
 	}
 	public double getGeneticDistance(EntityHuman other) {
 		double distance = Math.abs(this.getMaxHealth() - other.getMaxHealth());

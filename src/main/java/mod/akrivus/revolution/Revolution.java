@@ -3,14 +3,19 @@ package mod.akrivus.revolution;
 import mod.akrivus.revolution.entity.EntityFemale;
 import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.EntityMale;
+import mod.akrivus.revolution.item.ItemGenerator;
 import mod.akrivus.revolution.item.ItemHumanFlesh;
+import mod.akrivus.revolution.item.ItemMutator;
 import mod.akrivus.revolution.item.ItemSpawnWand;
 import mod.akrivus.revolution.proxy.ModProxy;
 import mod.akrivus.revolution.world.WorldGenTribes;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.item.Item;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -35,8 +40,11 @@ public class Revolution {
 	public static final String VERSION = "@version";
 	public static final String MCVER = "@mcversion";
 	
-	public static final ItemHumanFlesh HUMAN_FLESH_ITEM = new ItemHumanFlesh();
-	public static final ItemSpawnWand SPAWN_WAND_ITEM = new ItemSpawnWand();
+	public static final ItemHumanFlesh MAN_MEAT = new ItemHumanFlesh(false);
+	public static final ItemHumanFlesh COOKED_MAN_MEAT = new ItemHumanFlesh(true);
+	public static final ItemSpawnWand SPAWN_WAND = new ItemSpawnWand();
+	public static final ItemMutator MUTATOR = new ItemMutator();
+	public static final ItemGenerator GENERATOR = new ItemGenerator();
 	
 	@Instance public static Revolution instance;
 	@SidedProxy(clientSide = "mod.akrivus.revolution.proxy.ClientProxy", serverSide = "mod.akrivus.revolution.proxy.ServerProxy")
@@ -78,8 +86,19 @@ public class Revolution {
 		}
 		@SubscribeEvent
 		public static void registerItems(final RegistryEvent.Register<Item> event) {
-			event.getRegistry().register(HUMAN_FLESH_ITEM);
-			event.getRegistry().register(SPAWN_WAND_ITEM);
+			event.getRegistry().register(MAN_MEAT);
+			event.getRegistry().register(COOKED_MAN_MEAT);
+			event.getRegistry().register(SPAWN_WAND);
+			event.getRegistry().register(MUTATOR);
+			event.getRegistry().register(GENERATOR);
+		}
+		@SubscribeEvent
+		public static void registerModels(final ModelRegistryEvent event) {
+			ModelLoader.setCustomModelResourceLocation(Revolution.MAN_MEAT, 0, new ModelResourceLocation(Revolution.MAN_MEAT.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.COOKED_MAN_MEAT, 0, new ModelResourceLocation(Revolution.COOKED_MAN_MEAT.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.SPAWN_WAND, 0, new ModelResourceLocation(Revolution.SPAWN_WAND.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.MUTATOR, 0, new ModelResourceLocation(Revolution.MUTATOR.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.GENERATOR, 0, new ModelResourceLocation(Revolution.GENERATOR.getRegistryName(), "inventory"));
 		}
 	}
 	public static class Events {

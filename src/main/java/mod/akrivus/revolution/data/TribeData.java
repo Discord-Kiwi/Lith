@@ -57,9 +57,9 @@ public class TribeData extends WorldSavedData {
 			NBTTagCompound nbt = list.getCompoundTagAt(i);
 			UUID id = UUID.fromString(nbt.getString("id"));
 			Tribe tribe = new Tribe(nbt.getString("name"));
-			tribe.setOldHome(new BlockPos(nbt.getDouble("oldX"), nbt.getDouble("oldY"), nbt.getDouble("oldZ")));
-			tribe.setHome(new BlockPos(nbt.getDouble("homeX"), nbt.getDouble("homeY"), nbt.getDouble("homeZ")));
-			tribe.setHomeless(nbt.getBoolean("homeless"));
+			tribe.setOldHome(new BlockPos(nbt.getDouble("oldX"), nbt.getDouble("oldY"), nbt.getDouble("oldZ")), null);
+			tribe.setHome(new BlockPos(nbt.getDouble("homeX"), nbt.getDouble("homeY"), nbt.getDouble("homeZ")), null);
+			tribe.setHomeless(nbt.getBoolean("homeless"), null);
 			this.tribes.put(id, tribe);
 		}
 	}
