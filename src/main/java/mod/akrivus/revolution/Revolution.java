@@ -3,6 +3,8 @@ package mod.akrivus.revolution;
 import mod.akrivus.revolution.entity.EntityFemale;
 import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.EntityMale;
+import mod.akrivus.revolution.item.ItemAmplifier;
+import mod.akrivus.revolution.item.ItemFertilizer;
 import mod.akrivus.revolution.item.ItemGenerator;
 import mod.akrivus.revolution.item.ItemHumanFlesh;
 import mod.akrivus.revolution.item.ItemMutator;
@@ -45,6 +47,8 @@ public class Revolution {
 	public static final ItemSpawnWand SPAWN_WAND = new ItemSpawnWand();
 	public static final ItemMutator MUTATOR = new ItemMutator();
 	public static final ItemGenerator GENERATOR = new ItemGenerator();
+	public static final ItemFertilizer FERTILIZER = new ItemFertilizer();
+	public static final ItemAmplifier AMPLIFIER = new ItemAmplifier();
 	
 	@Instance public static Revolution instance;
 	@SidedProxy(clientSide = "mod.akrivus.revolution.proxy.ClientProxy", serverSide = "mod.akrivus.revolution.proxy.ServerProxy")
@@ -91,6 +95,8 @@ public class Revolution {
 			event.getRegistry().register(SPAWN_WAND);
 			event.getRegistry().register(MUTATOR);
 			event.getRegistry().register(GENERATOR);
+			event.getRegistry().register(FERTILIZER);
+			event.getRegistry().register(AMPLIFIER);
 		}
 		@SubscribeEvent
 		public static void registerModels(final ModelRegistryEvent event) {
@@ -99,6 +105,9 @@ public class Revolution {
 			ModelLoader.setCustomModelResourceLocation(Revolution.SPAWN_WAND, 0, new ModelResourceLocation(Revolution.SPAWN_WAND.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(Revolution.MUTATOR, 0, new ModelResourceLocation(Revolution.MUTATOR.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(Revolution.GENERATOR, 0, new ModelResourceLocation(Revolution.GENERATOR.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.FERTILIZER, 0, new ModelResourceLocation(Revolution.FERTILIZER.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.AMPLIFIER, 0, new ModelResourceLocation(Revolution.AMPLIFIER.getRegistryName(), "inventory"));
+
 		}
 	}
 	public static class Events {

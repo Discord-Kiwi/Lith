@@ -406,17 +406,22 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (!this.world.isRemote && hand == EnumHand.MAIN_HAND) {
-			player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
-			player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
-			player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + ((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + ((this.foodLevels / 20) * 100) + "% full."));
 			if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
 				this.setFirstName(player.getHeldItem(hand).getDisplayName());
 			}
-			if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
+			else if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
 				this.generate();
 			}
-			if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
+			else if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
 				this.mutate();
+			}
+			else if (player.getHeldItem(hand).getItem() == Revolution.AMPLIFIER) {
+				this.setAge(48384000);
+			}
+			else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
+				player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
+				player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
+				player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + ((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + ((this.foodLevels / 20) * 100) + "% full."));
 			}
 		}
 		return super.processInteract(player, hand);

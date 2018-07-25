@@ -6,3 +6,5 @@ item.cooked_man_meat.name=Cooked Man Meat
 item.spawn_wand.name=Spawn Wand
 item.mutator.name=Mutator
 item.generator.name=Generator
+item.fertilizer.name=Fertilizer
+item.amplifier.name=Amplifier
