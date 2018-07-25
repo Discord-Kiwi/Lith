@@ -24,7 +24,6 @@ public class EntityAISleep extends EntityAIBase {
     }
     @Override
     public void startExecuting() {
-    	System.out.println(this.getClass().getSimpleName());
     	this.human.getLookHelper().setLookPosition(this.human.posX, this.human.posY - 1, this.human.posZ, 30.0F, 30.0F);
     	this.human.setIsSleeping(true);
     }

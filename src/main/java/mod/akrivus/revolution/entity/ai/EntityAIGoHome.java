@@ -18,14 +18,14 @@ public class EntityAIGoHome extends EntityAIBase {
     	if (!this.human.getTribe().isHomeless() && !this.human.isSleeping() && this.human.getRevengeTarget() == null) {
     		this.home = this.human.getTribe().getHome();
     		if ((this.human.world.getWorldTime() % 24000) > 12000) {
-    			return true;
+    			return this.home.getDistance((int)(this.human.posX), (int)(this.human.posY), (int)(this.human.posZ)) > 4;
     		}
     	}
     	return false;
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return !this.human.getTribe().isHomeless() && this.human.getDistanceSq(this.home) > 1.0F && this.human.getRevengeTarget() == null;
+    	return false;
     }
     @Override
     public void startExecuting() {

@@ -24,7 +24,7 @@ public class EntityAIFindHome extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-        return this.human.getTribe().isHomeless();
+        return false;
     }
     @Override
     public void startExecuting() {

@@ -3,12 +3,14 @@ package mod.akrivus.revolution;
 import mod.akrivus.revolution.entity.EntityFemale;
 import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.EntityMale;
+import mod.akrivus.revolution.item.ItemHumanFlesh;
+import mod.akrivus.revolution.item.ItemSpawnWand;
 import mod.akrivus.revolution.proxy.ModProxy;
 import mod.akrivus.revolution.world.WorldGenTribes;
 import net.minecraft.entity.ai.EntityAINearestAttackableTarget;
 import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityGolem;
 import net.minecraft.entity.monster.EntityMob;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -32,6 +34,9 @@ public class Revolution {
 	public static final String NAME = "Revolution";
 	public static final String VERSION = "@version";
 	public static final String MCVER = "@mcversion";
+	
+	public static final ItemHumanFlesh HUMAN_FLESH_ITEM = new ItemHumanFlesh();
+	public static final ItemSpawnWand SPAWN_WAND_ITEM = new ItemSpawnWand();
 	
 	@Instance public static Revolution instance;
 	@SidedProxy(clientSide = "mod.akrivus.revolution.proxy.ClientProxy", serverSide = "mod.akrivus.revolution.proxy.ServerProxy")
@@ -68,8 +73,13 @@ public class Revolution {
 	public static class Registry {
 		@SubscribeEvent
 		public static void registerEntities(final RegistryEvent.Register<EntityEntry> event) {
-			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:female", 0).name("female").entity(EntityFemale.class).tracker(256, 20, true).egg(0xF3DBBF, 0x89BD8A).build());
-			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:male", 1).name("male").entity(EntityMale.class).tracker(256, 20, true).egg(0x996C59, 0x008E8F).build());
+			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:female", 0).name("female").entity(EntityFemale.class).tracker(256, 20, true).build());
+			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:male", 1).name("male").entity(EntityMale.class).tracker(256, 20, true).build());
+		}
+		@SubscribeEvent
+		public static void registerItems(final RegistryEvent.Register<Item> event) {
+			event.getRegistry().register(HUMAN_FLESH_ITEM);
+			event.getRegistry().register(SPAWN_WAND_ITEM);
 		}
 	}
 	public static class Events {

@@ -1,2 +1,5 @@
-entity.female.name=Female Human
-entity.male.name=Male Human
+entity.female.name=Female
+entity.male.name=Male
+
+item.human_flesh.name=Human Flesh
+item.spawn_wand.name=Spawn Wand
