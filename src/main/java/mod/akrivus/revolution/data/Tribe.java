@@ -18,12 +18,17 @@ public class Tribe {
 	public BlockPos getOldHome() {
 		return this.oldHome;
 	}
-	public void setOldHome(BlockPos oldHome, World world) {
-		this.oldHome = oldHome;
-		TribeData.get(world).markDirty();
-	}
 	public BlockPos getHome() {
 		return this.home;
+	}
+	public boolean isHomeless() {
+		return this.homeless;
+	}
+	public void setOldHome(BlockPos oldHome, World world) {
+		this.oldHome = oldHome;
+		if (world != null) {
+			TribeData.get(world).markDirty();
+		}
 	}
 	public void setHome(BlockPos home, World world) {
 		this.home = home; this.homeless = false;
@@ -42,8 +47,5 @@ public class Tribe {
 		if (world != null) {
 			TribeData.get(world).markDirty();
 		}
-	}
-	public boolean isHomeless() {
-		return this.homeless;
 	}
 }

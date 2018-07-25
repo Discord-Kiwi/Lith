@@ -67,7 +67,7 @@ public class TribeData extends WorldSavedData {
 		if (this.tribes.containsKey(id)) {
 			return this.tribes.get(id);
 		}
-		return null;
+		return new Tribe("undefined");
 	}
 	public UUID addTribe(String name) {
 		UUID id = UUID.randomUUID();
