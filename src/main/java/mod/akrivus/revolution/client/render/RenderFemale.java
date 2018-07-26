@@ -14,7 +14,7 @@ import net.minecraft.util.ResourceLocation;
 public class RenderFemale extends RenderBiped<EntityFemale> {
 	private static final ResourceLocation FEMALE_TEXTURE = new ResourceLocation("revolution:textures/entities/female/blank.png");
 	public RenderFemale(RenderManager manager) {
-		super(manager, new ModelFemale(), 0.25F);
+		super(manager, new ModelFemale(), 0.5F);
 		this.addLayer(new LayerBipedArmor(this));
 		this.addLayer(new LayerSkin(this));
 		this.addLayer(new LayerEyes(this));
@@ -24,10 +24,12 @@ public class RenderFemale extends RenderBiped<EntityFemale> {
 	public void preRenderCallback(EntityFemale human, float partialTickTime) {
 		if (human.getAge() < 18144000) {
 			float size = Math.min(1.0F, human.getSize() * (human.getAge() / 18144000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F));
-			GlStateManager.scale(size, size, size);
+			GlStateManager.scale(size * 0.9F, size * 0.9F, size * 0.9F);
+			this.shadowSize = 0.5F * size * 0.9F;
 		}
 		else {
 			GlStateManager.scale(human.getSize() * 0.9F, human.getSize() * 0.9F, human.getSize() * 0.9F);
+			this.shadowSize = 0.5F * human.getSize() * 0.9F;
 		}
 		if (human.isSleeping()) {
 			GlStateManager.rotate(180.0F, 0, 0, 1);
@@ -41,7 +43,11 @@ public class RenderFemale extends RenderBiped<EntityFemale> {
 	}
 	@Override
 	protected void renderEntityName(EntityFemale human, double x, double y, double z, String name, double distanceSq) {
-		this.renderLivingLabel(human, human.getTribeName(), x, y + 0.25, z, 64);
-		this.renderLivingLabel(human, human.getFirstName(), x, y, z, 64);
+		float size = human.getSize() * human.height * 0.9F;
+		if (human.getAge() < 18144000) {
+			size = Math.min(1.0F, human.getSize() * (human.getAge() / 18144000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F)) * 0.9F + 0.5F;
+		}
+		this.renderLivingLabel(human, human.getTribeName(), x, y - human.height + size + 0.25, z, 64);
+		this.renderLivingLabel(human, human.getFirstName(), x, y - human.height + size, z, 64);
 	}
 }

@@ -96,7 +96,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.setCanPickUpLoot(true);
 		this.tasks.addTask(0, new EntityAISleep(this));
 		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(0, new EntityAISpeak(this, 4));
+		this.tasks.addTask(0, new EntityAISpeak(this, 2));
 		this.tasks.addTask(1, new EntityAIFollowMom(this, 1.0D));
 		this.tasks.addTask(2, new EntityAIGoHome(this));
 		this.tasks.addTask(2, new EntityAIPickUpItems(this, 1.0D));
@@ -466,25 +466,6 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public SoundCategory getSoundCategory() {
         return SoundCategory.NEUTRAL;
     }
-	@Override
-	public float getSoundPitch() {
-		float base = 2.0F;
-		if (this instanceof EntityFemale) {
-			base *= 1.1F;
-		}
-		if (this.isOldEnoughToBreed()) {
-			base /= 2;
-		}
-		return base;
-	}
-	@Override
-	public SoundEvent getHurtSound(DamageSource source) {
-		return SoundEvents.ENTITY_VILLAGER_HURT;
-	}
-	@Override
-	public SoundEvent getDeathSound() {
-		return SoundEvents.ENTITY_VILLAGER_DEATH;
-	}
 	@Override
 	public boolean canDespawn() {
 		return false;

@@ -36,7 +36,6 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	}
 	@Override
 	public void startExecuting() {
-		this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
 		this.human.getLookHelper().setLookPositionWithEntity(this.item, 30.0F, 30.0F);
 		this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
 	}

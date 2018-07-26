@@ -87,7 +87,6 @@ public class EntityAIForage extends EntityAIBase {
     @Override
     public void startExecuting() {
     	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);
-    	this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
     }
     @Override
     public void updateTask() {

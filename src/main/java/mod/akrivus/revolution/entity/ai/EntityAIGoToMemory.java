@@ -61,7 +61,6 @@ public class EntityAIGoToMemory extends EntityAIBase {
     	}
     	else {
     		this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
-    		this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
     	}
     }
     @Override

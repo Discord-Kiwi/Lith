@@ -15,7 +15,7 @@ import net.minecraft.util.ResourceLocation;
 public class RenderMale extends RenderBiped<EntityMale> {
 	private static final ResourceLocation MALE_TEXTURE = new ResourceLocation("revolution:textures/entities/male/blank.png");
 	public RenderMale(RenderManager manager) {
-		super(manager, new ModelMale(), 0.25F);
+		super(manager, new ModelMale(), 0.5F);
 		this.addLayer(new LayerBipedArmor(this));
 		this.addLayer(new LayerSkin(this));
 		this.addLayer(new LayerEyes(this));
@@ -27,9 +27,11 @@ public class RenderMale extends RenderBiped<EntityMale> {
 		if (human.getAge() < 24192000) {
 			float size = Math.min(1.0F, human.getSize() * (human.getAge() / 24192000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F));
 			GlStateManager.scale(size, size, size);
+			this.shadowSize = 0.5F * size;
 		}
 		else {
 			GlStateManager.scale(human.getSize(), human.getSize(), human.getSize());
+			this.shadowSize = 0.5F * human.getSize();
 		}
 		if (human.isSleeping()) {
 			GlStateManager.rotate(180.0F, 0, 0, 1);
@@ -43,7 +45,11 @@ public class RenderMale extends RenderBiped<EntityMale> {
 	}
 	@Override
 	protected void renderEntityName(EntityMale human, double x, double y, double z, String name, double distanceSq) {
-		this.renderLivingLabel(human, human.getTribeName(), x, y + 0.25, z, 64);
-		this.renderLivingLabel(human, human.getFirstName(), x, y, z, 64);
+		float size = human.getSize() * human.height;
+		if (human.getAge() < 24192000) {
+			size = Math.min(1.0F, human.getSize() * (human.getAge() / 24192000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F)) + 0.5F;
+		}
+		this.renderLivingLabel(human, human.getTribeName(), x, y - human.height + size + 0.25F, z, 64);
+		this.renderLivingLabel(human, human.getFirstName(), x, y - human.height + size, z, 64);
 	}
 }

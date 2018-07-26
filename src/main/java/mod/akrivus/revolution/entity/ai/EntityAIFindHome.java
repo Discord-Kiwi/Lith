@@ -54,7 +54,6 @@ public class EntityAIFindHome extends EntityAIBase {
         	}
     		this.homeValid = blocksPassed / 64.0F > 0.5F;
     		if (this.homeValid) {
-    			this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
     			this.human.getNavigator().tryMoveToXYZ(this.newPos.getX(), this.newPos.getY(), this.newPos.getZ(), 1.0D);
     			this.human.getTribe().setHome(this.newPos, this.human.world);
     		}

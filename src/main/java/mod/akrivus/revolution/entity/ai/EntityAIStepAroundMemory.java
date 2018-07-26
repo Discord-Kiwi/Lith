@@ -46,7 +46,6 @@ public class EntityAIStepAroundMemory extends EntityAIBase {
     public void startExecuting() {
 		Vec3d pos = RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.human, 16, 4, new Vec3d(this.home.getX(), this.home.getY(), this.home.getZ()));
         if (pos != null) {
-        	this.human.playSound(SoundEvents.ENTITY_VILLAGER_NO, 1.0F, this.human.getSoundPitch());
             this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
         }
     }

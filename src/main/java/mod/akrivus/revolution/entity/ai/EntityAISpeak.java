@@ -19,7 +19,7 @@ public class EntityAISpeak extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-        if (this.entity.isOldEnoughToBreed()) {
+        if (this.entity.isOldEnoughToBreed() && this.entity.ticksExisted % 200 == 0) {
             List<EntityHuman> list = this.entity.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.entity.getEntityBoundingBox().grow(this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2), 3.0D, this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2)));
             for (int i = 0; i < list.size(); ++i) {
             	EntityHuman e = list.get(i);
@@ -51,7 +51,6 @@ public class EntityAISpeak extends EntityAIBase {
         untaughtMemories.addAll(this.entity.getMemories());
         untaughtMemories.removeAll(this.closestEntity.getMemories());
         for (UUID id : untaughtMemories) {
-        	this.entity.playSound(SoundEvents.ENTITY_VILLAGER_AMBIENT, 1.0F, this.entity.getSoundPitch());
         	this.closestEntity.learnMemory(id);
         }
     }

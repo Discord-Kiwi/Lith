@@ -57,7 +57,6 @@ public class EntityAIAvoidFromMemory extends EntityAIBase {
     }
     @Override
     public void startExecuting() {
-    	this.human.playSound(SoundEvents.ENTITY_VILLAGER_NO, 1.0F, this.human.getSoundPitch());
     	this.human.getNavigator().setPath(this.flightPath, this.speed);
     }
     @Override
