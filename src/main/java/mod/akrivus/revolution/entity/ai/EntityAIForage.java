@@ -10,6 +10,7 @@ import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
@@ -43,11 +44,12 @@ public class EntityAIForage extends EntityAIBase {
 	        	for (int y = -4; y < 4; ++y) {
 	        		for (int z = -8; z < 8; ++z) {
 	        			BlockPos check = this.human.getPosition().add(x, y, z);
-	        			Block block = this.human.world.getBlockState(check).getBlock();
+	        			IBlockState state = this.human.world.getBlockState(check);
+	        			Block block = state.getBlock();
 	        			if (blocks.contains(block.getUnlocalizedName())) {
 	        				pos.add(check);
 	        			}
-	        			else if (block != Blocks.AIR && !(block instanceof BlockLiquid)) {
+	        			else if (block != Blocks.AIR && !(block instanceof BlockLiquid) && block.getHarvestTool(state) == null) {
 	        				if (block.getHarvestTool(this.human.world.getBlockState(check)) == null) {
 	        					pos.add(check);
 	        				}
@@ -89,7 +91,7 @@ public class EntityAIForage extends EntityAIBase {
     public void updateTask() {
     	if (this.human.getNavigator().noPath()) {
     		if (!this.wandering) {
-    			if (this.human.getDistanceSq(this.home) < 2.0D) {
+    			if (this.human.getDistanceSq(this.home) < 16.0D) {
 		    		Item item = this.human.world.getBlockState(this.home).getBlock().getItemDropped(this.human.world.getBlockState(this.home), this.human.world.rand, 1);
 		    		if (item instanceof ItemFood) {
 		    			boolean learned = true;
@@ -115,7 +117,6 @@ public class EntityAIForage extends EntityAIBase {
     }
     @Override
     public void resetTask() {
-    	this.human.getNavigator().clearPath();
     	this.wandering = false;
     	this.home = null;
     }

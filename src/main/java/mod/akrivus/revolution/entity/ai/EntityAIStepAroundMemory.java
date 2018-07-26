@@ -15,7 +15,6 @@ import net.minecraft.util.math.Vec3d;
 
 public class EntityAIStepAroundMemory extends EntityAIBase {
     protected EntityHuman human;
-    protected BlockPos lastPos;
     protected BlockPos home;
     public EntityAIStepAroundMemory(EntityHuman human) {
         this.human = human;
@@ -32,18 +31,15 @@ public class EntityAIStepAroundMemory extends EntityAIBase {
 	        	}
 	        }
 	        double maxDistance = 256;
-	        this.lastPos = this.home;
 	        for (BlockPos loc : pos) {
 	        	double dist = this.human.getPosition().distanceSq(loc);
-	        	if (loc != this.lastPos) {
-		        	if (dist < maxDistance) {
-		        		maxDistance = this.human.getPosition().distanceSq(loc);
-		        		this.home = loc;
-		        	}
+	        	if (dist < maxDistance) {
+	        		maxDistance = this.human.getPosition().distanceSq(loc);
+	        		this.home = loc;
 	        	}
 	        }
     	}
-    	return this.home != this.lastPos;
+    	return this.home != null;
     }
     @Override
     public void startExecuting() {
@@ -54,10 +50,10 @@ public class EntityAIStepAroundMemory extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) < 256.0F || !this.human.getNavigator().noPath();
+    	return this.human.getDistanceSq(this.home) > 256.0F || !this.human.getNavigator().noPath();
     }
     @Override
     public void resetTask() {
-    	this.human.getNavigator().clearPath();
+        this.home = null;
     }
 }

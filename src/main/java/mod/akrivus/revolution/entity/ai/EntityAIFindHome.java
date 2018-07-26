@@ -24,7 +24,7 @@ public class EntityAIFindHome extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-        return false;
+        return this.human.getTribe().isHomeless() && !this.human.getNavigator().noPath();
     }
     @Override
     public void startExecuting() {
@@ -33,7 +33,7 @@ public class EntityAIFindHome extends EntityAIBase {
     			for (int z = -8; z < 8; ++z) {
     				BlockPos pos = this.human.getPosition().add(new BlockPos(x, y, z));
     	    		if (this.human.world.isAirBlock(pos.up(2)) && this.human.world.isAirBlock(pos.up(1)) && !this.human.world.isAirBlock(pos)) {
-    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 262144) {
+    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 65536) {
     	    				this.homeFound = true;
     	    				this.newPos = pos;
     	    			}
@@ -69,11 +69,5 @@ public class EntityAIFindHome extends EntityAIBase {
 	    		this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
 	    	}
     	}
-    }
-    @Override
-    public void resetTask() {
-    	this.human.getNavigator().clearPath();
-    	this.homeFound = false;
-    	this.homeValid = false;
     }
 }

@@ -17,6 +17,7 @@ public class EntityAIBreedInter extends EntityAIBase {
     public EntityAIBreedInter(EntityMale male, double speed) {
         this.moveSpeed = speed;
         this.male = male;
+        this.setMutexBits(4);
     }
     public boolean shouldExecute() {
         if (this.male.isOldEnoughToBreed() && this.male.isAroused()) {

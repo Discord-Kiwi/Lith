@@ -3,8 +3,8 @@ entity.male.name=Male
 
 item.man_meat.name=Man Meat
 item.cooked_man_meat.name=Cooked Man Meat
-item.spawn_wand.name=Spawn Wand
-item.mutator.name=Mutator
-item.generator.name=Generator
-item.fertilizer.name=Fertilizer
-item.amplifier.name=Amplifier
+item.spawner.name=Spawn Wand
+item.mutator.name=Mutator Wand
+item.generator.name=Generation Wand
+item.fertilizer.name=Fertilize Wand
+item.amplifier.name=Maturation Wand

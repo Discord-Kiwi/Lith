@@ -18,11 +18,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class ItemSpawnWand extends Item {
-	public ItemSpawnWand() {
+public class ItemSpawner extends Item {
+	public ItemSpawner() {
 		super();
-		this.setRegistryName(new ResourceLocation("revolution:spawn_wand"));
-		this.setUnlocalizedName("spawn_wand");
+		this.setRegistryName(new ResourceLocation("revolution:spawner"));
+		this.setUnlocalizedName("spawner");
 		this.setCreativeTab(CreativeTabs.MISC);
 		this.setMaxStackSize(1);
 	}

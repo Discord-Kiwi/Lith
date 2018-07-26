@@ -41,6 +41,6 @@ public class EntityAIGoHome extends EntityAIBase {
     }
     @Override
     public void resetTask() {
-    	this.human.getNavigator().clearPath();
+    	this.home = null;
     }
 }

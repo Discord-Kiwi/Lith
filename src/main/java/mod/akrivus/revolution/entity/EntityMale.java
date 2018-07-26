@@ -6,7 +6,7 @@ import net.minecraft.world.World;
 public class EntityMale extends EntityHuman {
 	public EntityMale(World world) {
 		super(world);
-		this.tasks.addTask(6, new EntityAIBreedInter(this, 0.3D));
+		this.tasks.addTask(4, new EntityAIBreedInter(this, 0.3D));
 	}
 	@Override
 	public boolean isAIDisabled() {

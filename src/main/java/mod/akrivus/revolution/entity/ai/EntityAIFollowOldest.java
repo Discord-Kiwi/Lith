@@ -14,10 +14,11 @@ public class EntityAIFollowOldest extends EntityAIBase {
     public EntityAIFollowOldest(EntityHuman follower, double speed) {
         this.moveSpeed = speed;
         this.follower = follower;
+        this.setMutexBits(1);
     }
     public boolean shouldExecute() {
         if (this.follower.getTribe().isHomeless()) {
-            List<EntityHuman> list = this.follower.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.follower.getEntityBoundingBox().grow(8.0D, 4.0D, 8.0D));
+            List<EntityHuman> list = this.follower.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.follower.getEntityBoundingBox().grow(16.0D, 8.0D, 16.0D));
             double maxDistance = Double.MAX_VALUE;
             this.elder = null;
             for (EntityHuman human : list) {

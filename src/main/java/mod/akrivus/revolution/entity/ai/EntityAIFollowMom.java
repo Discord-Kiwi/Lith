@@ -14,6 +14,7 @@ public class EntityAIFollowMom extends EntityAIBase {
     public EntityAIFollowMom(EntityHuman child, double speed) {
         this.moveSpeed = speed;
         this.child = child;
+        this.setMutexBits(1);
     }
     public boolean shouldExecute() {
         if (this.child.isOldEnoughToBreed()) {

@@ -47,7 +47,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return this.human.getDistanceSq(this.home) > 0.0F || !this.human.getNavigator().noPath();
+    	return this.human.getDistanceSq(this.home) > 1.0F || !this.human.getNavigator().noPath();
     }
     @Override
     public void startExecuting() {
@@ -55,6 +55,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
     		Vec3d pos = RandomPositionGenerator.findRandomTargetBlockTowards(this.human, 16, 4, new Vec3d(this.home.getX(), this.home.getY(), this.home.getZ()));
             if (pos != null) {
                 this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
+                this.lastPos = null;
             }
     	}
     	else {
@@ -62,20 +63,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
     	}
     }
     @Override
-    public void updateTask() {
-    	if (this.human.getDistanceSq(this.home) > 256) {
-    		Vec3d pos = RandomPositionGenerator.findRandomTargetBlockTowards(this.human, 16, 4, new Vec3d(this.home.getX(), this.home.getY(), this.home.getZ()));
-            if (pos != null) {
-                this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
-            }
-    	}
-    	else if (this.human.getNavigator().noPath()) {
-    		this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
-    	}
-    }
-    @Override
     public void resetTask() {
-    	this.human.getNavigator().clearPath();
     	this.home = null;
     }
 }

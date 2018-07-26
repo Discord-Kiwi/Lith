@@ -31,6 +31,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
+import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
@@ -92,18 +93,19 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(0, new EntityAISleep(this));
 		this.tasks.addTask(0, new EntityAISwimming(this));
 		this.tasks.addTask(0, new EntityAISpeak(this, 4));
-		this.tasks.addTask(1, new EntityAIFindHome(this));
-		this.tasks.addTask(1, new EntityAIGoHome(this));
-		this.tasks.addTask(2, new EntityAIEat(this, 8));
-		this.tasks.addTask(3, new EntityAIFollowMom(this, 0.7D));
-		this.tasks.addTask(4, new EntityAIPickUpItems(this, 0.6D));
-		this.tasks.addTask(4, new EntityAIAttackMelee(this, 0.8F, false));
-		this.tasks.addTask(5, new EntityAIForage(this));
-		this.tasks.addTask(6, new EntityAIAvoidFromMemory(this, 8, 0.8D));
-		this.tasks.addTask(6, new EntityAIStepAroundMemory(this));
-		this.tasks.addTask(7, new EntityAIGoToMemory(this));
-		this.tasks.addTask(8, new EntityAIFollowOldest(this, 0.7D));
+		this.tasks.addTask(1, new EntityAIFollowMom(this, 1.0D));
+		this.tasks.addTask(2, new EntityAIGoHome(this));
+		this.tasks.addTask(2, new EntityAIPickUpItems(this, 1.0D));
+		this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0F, false));
+		this.tasks.addTask(3, new EntityAIFindHome(this));
+		this.tasks.addTask(3, new EntityAIEat(this, 8));
+		this.tasks.addTask(4, new EntityAIForage(this));
+		this.tasks.addTask(5, new EntityAIAvoidFromMemory(this, 8, 1.0D));
+		this.tasks.addTask(5, new EntityAIStepAroundMemory(this));
+		this.tasks.addTask(5, new EntityAIGoToMemory(this));
+		this.tasks.addTask(7, new EntityAIFollowOldest(this, 1.0D));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
+        this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true, new Class[0]));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.memories = new ArrayList<UUID>();
 		this.dataManager.register(FIRST_NAME, PhonicsHelper.generateName(6, 3));
@@ -421,7 +423,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
 				player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
 				player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
-				player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + ((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + ((this.foodLevels / 20) * 100) + "% full."));
+				player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
 			}
 		}
 		return super.processInteract(player, hand);

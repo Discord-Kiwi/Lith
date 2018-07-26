@@ -16,7 +16,7 @@ public class EntityAIEat extends EntityAIBase {
     public EntityAIEat(EntityHuman entity, float maxDistance) {
         this.entity = entity;
         this.maxDistance = maxDistance;
-        this.setMutexBits(7);
+        this.setMutexBits(4);
     }
     @Override
     public boolean shouldExecute() {
@@ -36,6 +36,7 @@ public class EntityAIEat extends EntityAIBase {
 			            		if (!e.isSleeping() && e.getFoodLevels() > 12) {
 			            			ItemStack stack = this.hasFood(e);
 			            			if (!stack.isEmpty()) {
+			            				this.entity.getNavigator().tryMoveToEntityLiving(e, 1.0D);
 			            				this.stack = stack;
 			            				return true;
 			            			}

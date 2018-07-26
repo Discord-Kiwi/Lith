@@ -1,7 +1,10 @@
 package mod.akrivus.revolution.entity;
 
+import mod.akrivus.revolution.Revolution;
 import mod.akrivus.revolution.entity.ai.EntityAIBreedIntra;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
 
 public class EntityFemale extends EntityHuman {
@@ -19,14 +22,22 @@ public class EntityFemale extends EntityHuman {
 	@Override
 	public void writeEntityToNBT(NBTTagCompound compound) {
         super.writeEntityToNBT(compound);
+        compound.setFloat("fertilityFactor", this.fertilityFactor);
     }
 	@Override
     public void readEntityFromNBT(NBTTagCompound compound) {
        super.readEntityFromNBT(compound);
+       this.setFertilityFactor(compound.getFloat("fertilityFactor"));
     }
 	@Override
-	public void setSize(float size) {
-		this.dataManager.set(SIZE, size);
+	public boolean processInteract(EntityPlayer player, EnumHand hand) {
+		if (!this.world.isRemote && hand == EnumHand.MAIN_HAND) {
+			if (player.getHeldItem(hand).getItem() == Revolution.FERTILIZER) {
+				this.setFertilityFactor(this.world.getCurrentMoonPhaseFactor());
+				this.setIsFertile(true);
+			}
+		}
+		return super.processInteract(player, hand);
 	}
 	@Override
 	public boolean isOldEnoughToBreed() {

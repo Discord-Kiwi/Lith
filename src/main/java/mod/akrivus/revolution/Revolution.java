@@ -8,7 +8,7 @@ import mod.akrivus.revolution.item.ItemFertilizer;
 import mod.akrivus.revolution.item.ItemGenerator;
 import mod.akrivus.revolution.item.ItemHumanFlesh;
 import mod.akrivus.revolution.item.ItemMutator;
-import mod.akrivus.revolution.item.ItemSpawnWand;
+import mod.akrivus.revolution.item.ItemSpawner;
 import mod.akrivus.revolution.proxy.ModProxy;
 import mod.akrivus.revolution.world.WorldGenTribes;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -44,7 +44,7 @@ public class Revolution {
 	
 	public static final ItemHumanFlesh MAN_MEAT = new ItemHumanFlesh(false);
 	public static final ItemHumanFlesh COOKED_MAN_MEAT = new ItemHumanFlesh(true);
-	public static final ItemSpawnWand SPAWN_WAND = new ItemSpawnWand();
+	public static final ItemSpawner SPAWNER = new ItemSpawner();
 	public static final ItemMutator MUTATOR = new ItemMutator();
 	public static final ItemGenerator GENERATOR = new ItemGenerator();
 	public static final ItemFertilizer FERTILIZER = new ItemFertilizer();
@@ -92,7 +92,7 @@ public class Revolution {
 		public static void registerItems(final RegistryEvent.Register<Item> event) {
 			event.getRegistry().register(MAN_MEAT);
 			event.getRegistry().register(COOKED_MAN_MEAT);
-			event.getRegistry().register(SPAWN_WAND);
+			event.getRegistry().register(SPAWNER);
 			event.getRegistry().register(MUTATOR);
 			event.getRegistry().register(GENERATOR);
 			event.getRegistry().register(FERTILIZER);
@@ -102,7 +102,7 @@ public class Revolution {
 		public static void registerModels(final ModelRegistryEvent event) {
 			ModelLoader.setCustomModelResourceLocation(Revolution.MAN_MEAT, 0, new ModelResourceLocation(Revolution.MAN_MEAT.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(Revolution.COOKED_MAN_MEAT, 0, new ModelResourceLocation(Revolution.COOKED_MAN_MEAT.getRegistryName(), "inventory"));
-			ModelLoader.setCustomModelResourceLocation(Revolution.SPAWN_WAND, 0, new ModelResourceLocation(Revolution.SPAWN_WAND.getRegistryName(), "inventory"));
+			ModelLoader.setCustomModelResourceLocation(Revolution.SPAWNER, 0, new ModelResourceLocation(Revolution.SPAWNER.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(Revolution.MUTATOR, 0, new ModelResourceLocation(Revolution.MUTATOR.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(Revolution.GENERATOR, 0, new ModelResourceLocation(Revolution.GENERATOR.getRegistryName(), "inventory"));
 			ModelLoader.setCustomModelResourceLocation(Revolution.FERTILIZER, 0, new ModelResourceLocation(Revolution.FERTILIZER.getRegistryName(), "inventory"));

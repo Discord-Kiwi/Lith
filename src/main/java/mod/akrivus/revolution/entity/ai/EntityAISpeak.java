@@ -14,32 +14,30 @@ public class EntityAISpeak extends EntityAIBase {
     public EntityAISpeak(EntityHuman entity, float maxDistance) {
         this.entity = entity;
         this.maxDistance = maxDistance;
-        this.setMutexBits(7);
+        this.setMutexBits(4);
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.entity.isSleeping()) {
-	        if (this.entity.getAttackTarget() == null && this.entity.isOldEnoughToBreed()) {
-	            List<EntityHuman> list = this.entity.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.entity.getEntityBoundingBox().grow(this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2), 3.0D, this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2)));
-	            for (int i = 0; i < list.size(); ++i) {
-	            	EntityHuman e = list.get(i);
-	            	if (e != this.entity) { 
-		            	if (e.canEntityBeSeen(this.entity)) {
-		            		e.setSickness(this.entity.getSickness());
-		            		if (e.getTribeID().equals(this.entity.getTribeID())) {
-			            		for (UUID mem : this.entity.getMemories()) {
-			            			if (!e.getMemories().contains(mem)) {
-			            				this.closestEntity = e;
-			            				break;
-			            			}
-			            		}
+        if (this.entity.isOldEnoughToBreed()) {
+            List<EntityHuman> list = this.entity.world.<EntityHuman>getEntitiesWithinAABB(EntityHuman.class, this.entity.getEntityBoundingBox().grow(this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2), 3.0D, this.maxDistance / (this.entity.world.isDaytime() ? 1 : 2)));
+            for (int i = 0; i < list.size(); ++i) {
+            	EntityHuman e = list.get(i);
+            	if (e != this.entity) { 
+	            	if (e.canEntityBeSeen(this.entity)) {
+	            		e.setSickness(this.entity.getSickness());
+	            		if (e.getTribeID().equals(this.entity.getTribeID())) {
+		            		for (UUID mem : this.entity.getMemories()) {
+		            			if (!e.getMemories().contains(mem)) {
+		            				this.closestEntity = e;
+		            				break;
+		            			}
 		            		}
-		            	}
+	            		}
 	            	}
-	            }
-	            return this.closestEntity != null;
-	        }
-    	}
+            	}
+            }
+            return this.closestEntity != null;
+        }
     	return false;
     }
     @Override
