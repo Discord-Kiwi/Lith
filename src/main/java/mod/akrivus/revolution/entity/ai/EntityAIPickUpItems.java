@@ -5,6 +5,7 @@ import java.util.List;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.item.EntityItem;
+import net.minecraft.init.SoundEvents;
 
 public class EntityAIPickUpItems extends EntityAIBase {
 	private final EntityHuman human;
@@ -35,6 +36,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	}
 	@Override
 	public void startExecuting() {
+		this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
 		this.human.getLookHelper().setLookPositionWithEntity(this.item, 30.0F, 30.0F);
 		this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
 	}

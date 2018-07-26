@@ -14,6 +14,6 @@ public class EntityMale extends EntityHuman {
 	}
 	@Override
 	public boolean isOldEnoughToBreed() {
-		return this.getAge() > 24192000;
+		return this.getAge() > 24192000 * this.getAgeFactor();
 	}
 }

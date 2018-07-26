@@ -5,6 +5,7 @@ import java.util.List;
 import mod.akrivus.revolution.entity.EntityFemale;
 import mod.akrivus.revolution.entity.EntityMale;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.init.SoundEvents;
 
 public class EntityAIBreedIntra extends EntityAIBase {
     private EntityMale candidate;
@@ -34,6 +35,7 @@ public class EntityAIBreedIntra extends EntityAIBase {
         return false;
     }
     public void startExecuting() {
+    	this.female.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.female.getSoundPitch());
     	this.female.getNavigator().tryMoveToEntityLiving(this.candidate, this.moveSpeed);
     }
     public boolean shouldContinueExecuting() {

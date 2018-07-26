@@ -10,6 +10,7 @@ import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -60,6 +61,7 @@ public class EntityAIGoToMemory extends EntityAIBase {
     	}
     	else {
     		this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 1.0D);
+    		this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
     	}
     }
     @Override

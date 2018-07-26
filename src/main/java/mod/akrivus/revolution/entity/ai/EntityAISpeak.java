@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.init.SoundEvents;
 
 public class EntityAISpeak extends EntityAIBase {
     protected EntityHuman entity;
@@ -50,6 +51,7 @@ public class EntityAISpeak extends EntityAIBase {
         untaughtMemories.addAll(this.entity.getMemories());
         untaughtMemories.removeAll(this.closestEntity.getMemories());
         for (UUID id : untaughtMemories) {
+        	this.entity.playSound(SoundEvents.ENTITY_VILLAGER_AMBIENT, 1.0F, this.entity.getSoundPitch());
         	this.closestEntity.learnMemory(id);
         }
     }

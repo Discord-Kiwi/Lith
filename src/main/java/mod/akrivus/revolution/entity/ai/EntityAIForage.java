@@ -14,6 +14,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.util.EnumHand;
@@ -86,6 +87,7 @@ public class EntityAIForage extends EntityAIBase {
     @Override
     public void startExecuting() {
     	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);
+    	this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
     }
     @Override
     public void updateTask() {
@@ -108,6 +110,7 @@ public class EntityAIForage extends EntityAIBase {
 		    		}
 		    		this.human.world.destroyBlock(this.home, true);
 		    		this.human.swingArm(EnumHand.MAIN_HAND);
+		    		this.human.resetBlockTicks();
     			}
     			else {
     		    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);

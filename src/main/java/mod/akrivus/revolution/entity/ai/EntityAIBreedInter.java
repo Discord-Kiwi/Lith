@@ -9,6 +9,7 @@ import mod.akrivus.revolution.entity.EntityFemale;
 import mod.akrivus.revolution.entity.EntityHuman;
 import mod.akrivus.revolution.entity.EntityMale;
 import net.minecraft.entity.ai.EntityAIBase;
+import net.minecraft.init.SoundEvents;
 
 public class EntityAIBreedInter extends EntityAIBase {
     private EntityFemale candidate;
@@ -46,6 +47,7 @@ public class EntityAIBreedInter extends EntityAIBase {
     public void updateTask() {
         this.male.getNavigator().tryMoveToEntityLiving(this.candidate, this.moveSpeed);
         if (this.male.getDistanceSq(this.candidate) < 2.0D) {
+        	this.male.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.male.getSoundPitch());
         	EntityHuman child = this.candidate.createChild(this.male);
     		this.candidate.depleteFoodLevels(this.candidate.getFoodLevels());
         	this.candidate.setSickness(this.male.getImmuneStrength());

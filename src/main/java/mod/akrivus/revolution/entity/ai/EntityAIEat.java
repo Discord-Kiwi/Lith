@@ -52,7 +52,7 @@ public class EntityAIEat extends EntityAIBase {
     @Override
     public void startExecuting() {
     	ItemFood item = (ItemFood)(this.stack.getItem());
-        this.entity.depleteFoodLevels(-item.getHealAmount(this.stack));
+        this.entity.setFoodLevels(this.entity.getFoodLevels() + item.getHealAmount(this.stack));
         this.entity.playSound(SoundEvents.ENTITY_GENERIC_EAT, 1.0F, 1.0F);
         this.stack.shrink(1);
     }

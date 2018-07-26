@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.util.math.Vec3d;
 
@@ -56,6 +57,7 @@ public class EntityAIAvoidFromMemory extends EntityAIBase {
     }
     @Override
     public void startExecuting() {
+    	this.human.playSound(SoundEvents.ENTITY_VILLAGER_NO, 1.0F, this.human.getSoundPitch());
     	this.human.getNavigator().setPath(this.flightPath, this.speed);
     }
     @Override

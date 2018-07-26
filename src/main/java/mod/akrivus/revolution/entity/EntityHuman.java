@@ -83,6 +83,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected double foodLevels;
 	protected double sickness;
 	
+	protected int blockTicks;
+	
 	protected UUID tribe;
 	protected InventoryBasic inventory;
 	protected List<UUID> memories;
@@ -96,13 +98,13 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(1, new EntityAIFollowMom(this, 1.0D));
 		this.tasks.addTask(2, new EntityAIGoHome(this));
 		this.tasks.addTask(2, new EntityAIPickUpItems(this, 1.0D));
-		this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0F, false));
-		this.tasks.addTask(3, new EntityAIFindHome(this));
-		this.tasks.addTask(3, new EntityAIEat(this, 8));
-		this.tasks.addTask(4, new EntityAIForage(this));
-		this.tasks.addTask(5, new EntityAIAvoidFromMemory(this, 8, 1.0D));
-		this.tasks.addTask(5, new EntityAIStepAroundMemory(this));
-		this.tasks.addTask(5, new EntityAIGoToMemory(this));
+		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 1.0D));
+		this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0F, false));
+		this.tasks.addTask(5, new EntityAIFindHome(this));
+		this.tasks.addTask(5, new EntityAIEat(this, 8));
+		this.tasks.addTask(5, new EntityAIForage(this));
+		this.tasks.addTask(6, new EntityAIStepAroundMemory(this));
+		this.tasks.addTask(6, new EntityAIGoToMemory(this));
 		this.tasks.addTask(7, new EntityAIFollowOldest(this, 1.0D));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
         this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true, new Class[0]));
@@ -242,6 +244,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			this.setIsSleeping(false);
 		}
 		if (!this.world.isRemote) {
+			++this.blockTicks;
 			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
 				this.setTribeName(this.getTribe().getName());
 			}
@@ -439,7 +442,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected void updateEquipmentIfNeeded(EntityItem item) {
         ItemStack itemstack = item.getItem();
         ItemStack other = this.inventory.addItem(itemstack);
-        if (itemstack.getItem() instanceof ItemFood) {
+        if (itemstack.getItem() instanceof ItemFood && this.blockTicks > 20) {
 			this.addMemory("GOTO", this.getPosition());
 		}
         if (!other.isEmpty()) {
@@ -468,6 +471,17 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public boolean getAlwaysRenderNameTag() {
 		return true;
+	}
+	@Override
+	public float getSoundPitch() {
+		float base = 2.0F;
+		if (this instanceof EntityFemale) {
+			base *= 1.1F;
+		}
+		if (this.isOldEnoughToBreed()) {
+			base /= 2;
+		}
+		return base;
 	}
 	public void setStats(double strength, double stamina, double speed) {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * Math.min(18.0D, strength) + 1.0D);
@@ -668,6 +682,9 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public boolean isAroused() {
 		return this.isFertile();
+	}
+	public void resetBlockTicks() {
+		this.blockTicks = 0;
 	}
 	public void mutate() {
 		EntityHuman human = Humans.gen(this, this.getClass());

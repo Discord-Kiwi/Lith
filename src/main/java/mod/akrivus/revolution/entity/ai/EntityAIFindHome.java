@@ -3,6 +3,7 @@ package mod.akrivus.revolution.entity.ai;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -53,6 +54,7 @@ public class EntityAIFindHome extends EntityAIBase {
         	}
     		this.homeValid = blocksPassed / 64.0F > 0.5F;
     		if (this.homeValid) {
+    			this.human.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, this.human.getSoundPitch());
     			this.human.getNavigator().tryMoveToXYZ(this.newPos.getX(), this.newPos.getY(), this.newPos.getZ(), 1.0D);
     			this.human.getTribe().setHome(this.newPos, this.human.world);
     		}
