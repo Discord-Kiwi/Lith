@@ -5,6 +5,7 @@
 		"description": "Witness tribes of early humans with their own memories, genetics, and adaptations!",
 		"version": "${version}",
 		"mcversion": "${mcversion}",
+        "logoFile": "logo.png",
 		"credits": "",
 		"authorList": [
 			"Akrivus"
