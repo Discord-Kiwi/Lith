@@ -1,5 +1,5 @@
 # Revolution
-Revolution is a mod that adds groups of humans called "tribes" to Minecraft. Tribes have their own unique language, genetics, and adaptations based on the location that they spawned in. Individually, humans within these tribes learn about the environment around them and communicate this to their fellow tribesman, allowing the tribe as a whole to adapt to a change environment.
+Revolution is a mod that adds groups of humans called "tribes" to Minecraft. Tribes have their own unique language, genetics, and adaptations based on the location that they spawned in. Individually, humans within these tribes learn about the environment around them and communicate this to their fellow tribesmen, allowing the tribe as a whole to adapt to a changing environment.
 
 ## Tribes
 * Spawn about 12 to 30 chunks apart.
