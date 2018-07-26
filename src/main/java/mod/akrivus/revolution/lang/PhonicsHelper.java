@@ -1,9 +1,8 @@
 package mod.akrivus.revolution.lang;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
-import scala.actors.threadpool.Arrays;
 
 public class PhonicsHelper {
 	private static final Random RANDOM = new Random();
