@@ -6,7 +6,7 @@ import mod.akrivus.revolution.entity.EntityMale;
 import mod.akrivus.revolution.item.ItemAmplifier;
 import mod.akrivus.revolution.item.ItemFertilizer;
 import mod.akrivus.revolution.item.ItemGenerator;
-import mod.akrivus.revolution.item.ItemHumanFlesh;
+import mod.akrivus.revolution.item.ItemManMeat;
 import mod.akrivus.revolution.item.ItemMutator;
 import mod.akrivus.revolution.item.ItemSpawner;
 import mod.akrivus.revolution.proxy.ModProxy;
@@ -42,8 +42,8 @@ public class Revolution {
 	public static final String VERSION = "@version";
 	public static final String MCVER = "@mcversion";
 	
-	public static final ItemHumanFlesh MAN_MEAT = new ItemHumanFlesh(false);
-	public static final ItemHumanFlesh COOKED_MAN_MEAT = new ItemHumanFlesh(true);
+	public static final ItemManMeat MAN_MEAT = new ItemManMeat(false);
+	public static final ItemManMeat COOKED_MAN_MEAT = new ItemManMeat(true);
 	public static final ItemSpawner SPAWNER = new ItemSpawner();
 	public static final ItemMutator MUTATOR = new ItemMutator();
 	public static final ItemGenerator GENERATOR = new ItemGenerator();
