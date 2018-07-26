@@ -39,6 +39,7 @@ import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
@@ -52,6 +53,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.DifficultyInstance;
@@ -465,14 +467,6 @@ public class EntityHuman extends EntityMob implements IAnimals {
         return SoundCategory.NEUTRAL;
     }
 	@Override
-	public boolean canDespawn() {
-		return false;
-	}
-	@Override
-	public boolean getAlwaysRenderNameTag() {
-		return true;
-	}
-	@Override
 	public float getSoundPitch() {
 		float base = 2.0F;
 		if (this instanceof EntityFemale) {
@@ -482,6 +476,22 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			base /= 2;
 		}
 		return base;
+	}
+	@Override
+	public SoundEvent getHurtSound(DamageSource source) {
+		return SoundEvents.ENTITY_VILLAGER_HURT;
+	}
+	@Override
+	public SoundEvent getDeathSound() {
+		return SoundEvents.ENTITY_VILLAGER_DEATH;
+	}
+	@Override
+	public boolean canDespawn() {
+		return false;
+	}
+	@Override
+	public boolean getAlwaysRenderNameTag() {
+		return true;
 	}
 	public void setStats(double strength, double stamina, double speed) {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * Math.min(18.0D, strength) + 1.0D);

@@ -2,7 +2,7 @@
 	{
 		"modid": "revolution",
 		"name": "Revolution",
-		"description": "Minecraft modding experiment in language, machine learning, and genetics.",
+		"description": "Witness tribes of early humans with their own memories, genetics, and adaptations!",
 		"version": "${version}",
 		"mcversion": "${mcversion}",
 		"credits": "",
