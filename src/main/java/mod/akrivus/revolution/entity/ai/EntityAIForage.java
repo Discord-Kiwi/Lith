@@ -10,11 +10,11 @@ import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
 import net.minecraft.util.EnumHand;
@@ -22,6 +22,17 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 public class EntityAIForage extends EntityAIBase {
+	static List<Material> materials = new ArrayList<Material>();
+	static {
+		materials.add(Material.CACTUS);
+		materials.add(Material.CAKE);
+		materials.add(Material.GOURD);
+		materials.add(Material.GRASS);
+		materials.add(Material.LEAVES);
+		materials.add(Material.PLANTS);
+		materials.add(Material.VINE);
+	}
+	
     protected EntityHuman human;
     protected BlockPos lastPos;
     protected BlockPos home;
@@ -50,7 +61,7 @@ public class EntityAIForage extends EntityAIBase {
 	        			if (blocks.contains(block.getUnlocalizedName())) {
 	        				pos.add(check);
 	        			}
-	        			else if (block != Blocks.AIR && !(block instanceof BlockLiquid) && block.getHarvestTool(state) == null) {
+	        			else if (block.getHarvestTool(state) == null && EntityAIForage.materials.contains(state.getMaterial())) {
 	        				if (block.getHarvestTool(this.human.world.getBlockState(check)) == null) {
 	        					pos.add(check);
 	        				}
@@ -93,10 +104,12 @@ public class EntityAIForage extends EntityAIBase {
     	if (this.human.getNavigator().noPath()) {
     		if (!this.wandering) {
     			if (this.human.getDistanceSq(this.home) < 16.0D) {
-		    		Item item = this.human.world.getBlockState(this.home).getBlock().getItemDropped(this.human.world.getBlockState(this.home), this.human.world.rand, 1);
+    				IBlockState state = this.human.world.getBlockState(this.home);
+    				Block block = this.human.world.getBlockState(this.home).getBlock();
+		    		Item item = block.getItemDropped(state, this.human.world.rand, 1);
 		    		if (item instanceof ItemFood) {
 		    			boolean learned = true;
-						Map<UUID, Memory> collective = LearnedData.get(human.world).memories;
+						Map<UUID, Memory> collective = LearnedData.get(this.human.world).memories;
 						for (UUID id : this.human.getMemories()) {
 							if (item.getUnlocalizedName().equals(collective.get(id).getBreak())) {
 								learned = false;
