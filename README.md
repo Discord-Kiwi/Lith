@@ -24,6 +24,7 @@ Revolution is a mod that adds groups of humans called "tribes" to Minecraft. Tri
 
 ## Controls
 * Right-click human to get name, tribe, age, health, and hunger.
+* Find special wands in the "miscellaneous" tab in creative menu.
 * Use spawn wand to spawn a new tribe.
 * Use mutator wand to amplify mutations.
 * Use generation wand to amplify non-mutations.
