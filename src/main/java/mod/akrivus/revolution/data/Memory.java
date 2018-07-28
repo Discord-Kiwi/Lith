@@ -52,6 +52,12 @@ public class Memory {
 		}
 		return null;
 	}
+	public String getIgnore() {
+		if (this.type.equals("IGNORE")) {
+			return this.data;
+		}
+		return null;
+	}
 	public String getFind() {
 		if (this.type.equals("FIND")) {
 			return this.data;
@@ -60,6 +66,12 @@ public class Memory {
 	}
 	public String getBreak() {
 		if (this.type.equals("BREAK")) {
+			return this.data;
+		}
+		return null;
+	}
+	public String getWalk() {
+		if (this.type.equals("WALK")) {
 			return this.data;
 		}
 		return null;

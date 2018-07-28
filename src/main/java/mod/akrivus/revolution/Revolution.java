@@ -85,8 +85,8 @@ public class Revolution {
 	public static class Registry {
 		@SubscribeEvent
 		public static void registerEntities(final RegistryEvent.Register<EntityEntry> event) {
-			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:female", 0).name("female").entity(EntityFemale.class).tracker(256, 20, true).build());
-			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:male", 1).name("male").entity(EntityMale.class).tracker(256, 20, true).build());
+			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:female", 0).name("female").entity(EntityFemale.class).tracker(512, 40, true).build());
+			event.getRegistry().register(EntityEntryBuilder.create().id("revolution:male", 1).name("male").entity(EntityMale.class).tracker(512, 40, true).build());
 		}
 		@SubscribeEvent
 		public static void registerItems(final RegistryEvent.Register<Item> event) {

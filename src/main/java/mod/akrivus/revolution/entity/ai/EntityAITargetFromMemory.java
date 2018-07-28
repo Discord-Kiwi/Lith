@@ -34,28 +34,32 @@ public class EntityAITargetFromMemory extends EntityAITarget {
 	        for (UUID id : this.human.getMemories()) {
 	        	for (int i = 0; i < list.size(); ++i) {
 		        	EntityLivingBase entity = list.get(i);
-		        	if (entity.getClass().getSimpleName().equals(memories.get(id).getFear())) {
+		        	String name = entity.getClass().getSimpleName();
+		        	if (name.equals(memories.get(id).getFear()) || name.equals(memories.get(id).getIgnore())) {
 		        		return false;
 		        	}
 		        }
 	        }
 	        for (int i = 0; i < list.size(); ++i) {
 	        	EntityLivingBase entity = list.get(i);
-	        	if (!(entity instanceof EntityHuman) && entity instanceof EntityLiving) {
-	        		EntityLiving living = (EntityLiving)(entity);
-	        		if (living.getAttackTarget() instanceof EntityHuman) {
-	        			this.target = living;
-	        			return true;
-	        		}
-	        		else {
-	        			int factor = this.human.getAge() - 24192000;
-						if (factor < 24192000 || factor > 0) {
-							if (factor / 24192000.0F < this.human.world.rand.nextDouble()) {
-								this.target = living;
-								return true;
-							}
+	        	if (entity instanceof EntityHuman) {
+	        		continue;
+	        	}
+	        	else {
+		        	if (entity instanceof EntityLiving) {
+		        		EntityLiving living = (EntityLiving)(entity);
+		        		if (living.getAttackTarget() instanceof EntityHuman) {
+		        			this.target = living;
+		        			return true;
+		        		}
+		        	}
+	    			int factor = this.human.getAge() - 24192000;
+					if (factor < 24192000 || factor > 0) {
+						if (factor / 24192000.0F < this.human.world.rand.nextDouble()) {
+							this.target = entity;
+							return true;
 						}
-	        		}
+					}
 	        	}
 	        }
 		}

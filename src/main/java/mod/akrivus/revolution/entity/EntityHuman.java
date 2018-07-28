@@ -37,9 +37,9 @@ import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
-import net.minecraft.init.SoundEvents;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemFood;
@@ -53,7 +53,6 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.DifficultyInstance;
@@ -74,6 +73,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected static final DataParameter<Boolean> HAIR_GRAYS = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
 	protected static final DataParameter<Boolean> HAIR_LOSS = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
 	protected static final DataParameter<Boolean> SLEEPING = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
+	
+	public Block lastBlockBreak = Blocks.AIR;
 	
 	protected double immuneStrength;
 	protected double altitudeStrength;
@@ -371,7 +372,13 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			}
 		}
 		if (learned) {
-			this.addMemory("FIGHT", target);
+			boolean dropLoot = !this.world.<EntityItem>getEntitiesWithinAABB(EntityItem.class, this.getEntityBoundingBox().grow(2.0D, 2.0D, 2.0D)).isEmpty();
+			if (this.getAttackTarget().equals(target) || dropLoot) {
+				this.addMemory("FIGHT", target);
+			}
+			else {
+				this.addMemory("IGNORE", target);
+			}
 		}
 	}
 	@Override
@@ -444,8 +451,33 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected void updateEquipmentIfNeeded(EntityItem item) {
         ItemStack itemstack = item.getItem();
         ItemStack other = this.inventory.addItem(itemstack);
-        if (itemstack.getItem() instanceof ItemFood && this.blockTicks > 20) {
-			this.addMemory("GOTO", this.getPosition());
+        if (itemstack.getItem() instanceof ItemFood) {
+        	if (this.blockTicks > 20) {
+        		boolean learned = true;
+				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+				for (UUID id : this.getMemories()) {
+					if (this.getPosition().equals(collective.get(id).getGoto())) {
+						learned = false;
+						break;
+					}
+				}
+				if (learned) {
+					this.addMemory("GOTO", this.getPosition());
+				}
+        	}
+        	else {
+        		boolean learned = true;
+				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+				for (UUID id : this.getMemories()) {
+					if (this.lastBlockBreak.getUnlocalizedName().equals(collective.get(id).getBreak())) {
+						learned = false;
+						break;
+					}
+				}
+				if (learned) {
+					this.addMemory("BREAK", this.lastBlockBreak);
+				}
+        	}
 		}
         if (!other.isEmpty()) {
         	itemstack.setCount(other.getCount());

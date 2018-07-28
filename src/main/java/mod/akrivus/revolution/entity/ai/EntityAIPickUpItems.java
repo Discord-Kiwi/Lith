@@ -11,6 +11,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	private final EntityHuman human;
 	private final double movementSpeed;
 	private EntityItem item;
+	private int blockTick = 0;
 
 	public EntityAIPickUpItems(EntityHuman entityIn, double movementSpeedIn) {
 		this.human = entityIn;
@@ -19,7 +20,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	}
 	@Override
 	public boolean shouldExecute() {
-		List<EntityItem> list = this.human.world.<EntityItem>getEntitiesWithinAABB(EntityItem.class, this.human.getEntityBoundingBox().grow(16.0D, 4.0D, 16.0D));
+		List<EntityItem> list = this.human.world.<EntityItem>getEntitiesWithinAABB(EntityItem.class, this.human.getEntityBoundingBox().grow(8.0D, 2.0D, 8.0D));
 		double maxDistance = Double.MAX_VALUE;
 		for (EntityItem item : list) {
 			double newDistance = this.human.getDistanceSq(item);
@@ -28,20 +29,26 @@ public class EntityAIPickUpItems extends EntityAIBase {
 				this.item = item;
 			}
 		}
-		return this.item != null && !this.item.isDead && this.human.canPickUpLoot();
+ 		return this.item != null && !this.item.isDead && this.human.canPickUpLoot() && this.human.canEntityBeSeen(this.item)
+ 				&& this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
 	}
 	@Override
 	public boolean shouldContinueExecuting() {
-		return false;
+		return this.item != null && !this.item.isDead && this.human.canEntityBeSeen(this.item);
 	}
 	@Override
 	public void startExecuting() {
 		this.human.getLookHelper().setLookPositionWithEntity(this.item, 30.0F, 30.0F);
-		this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
+	}
+	@Override
+	public void updateTask() {
+		++this.blockTick;
+		if (this.blockTick > 600) {
+			this.human.addMemory("AVOID", this.item.getPosition());
+		}
 	}
 	@Override
 	public void resetTask() {
-		this.human.getNavigator().clearPath();
 		this.item = null;
 	}
 }

@@ -15,8 +15,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemFood;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -46,8 +44,10 @@ public class EntityAIForage extends EntityAIBase {
     	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000) {
 	        Map<UUID, Memory> memories = LearnedData.get(this.human.world).memories;
 	        List<String> blocks = new ArrayList<String>();
+	        List<String> walks = new ArrayList<String>();
 	        for (UUID id : this.human.getMemories()) {
 	        	blocks.add(memories.get(id).getBreak());
+	        	walks.add(memories.get(id).getWalk());
 	        }
 	        List<BlockPos> pos = new ArrayList<BlockPos>();
 	        double maxDistance = 262144;
@@ -55,16 +55,22 @@ public class EntityAIForage extends EntityAIBase {
 	        for (int x = -8; x < 8; ++x) {
 	        	for (int y = -4; y < 4; ++y) {
 	        		for (int z = -8; z < 8; ++z) {
+	        			if (x == 0 && y < 0 && z == 0) {
+	        				continue;
+	        			}
 	        			BlockPos check = this.human.getPosition().add(x, y, z);
 	        			IBlockState state = this.human.world.getBlockState(check);
 	        			Block block = state.getBlock();
-	        			if (blocks.contains(block.getUnlocalizedName())) {
-	        				pos.add(check);
-	        			}
-	        			else if (block.getHarvestTool(state) == null && EntityAIForage.materials.contains(state.getMaterial())) {
-	        				if (block.getHarvestTool(this.human.world.getBlockState(check)) == null) {
-	        					pos.add(check);
-	        				}
+	        			if (block != Blocks.AIR && block != Blocks.BEDROCK && !(blocks instanceof BlockLiquid)) {
+	        				if (blocks.contains(block.getUnlocalizedName())) {
+		        				pos.add(check);
+		        			}
+		        			else if (block.getHarvestTool(state) != "pickaxe"
+		        					|| materials.contains(state.getMaterial())) {
+			        			if (!walks.contains(block.getUnlocalizedName())) {
+			        				pos.add(check);
+			        			}
+		        			}
 	        			}
 	    	        }
 		        }
@@ -81,7 +87,7 @@ public class EntityAIForage extends EntityAIBase {
 		        for (BlockPos loc : pos) {
 		        	double dist = this.human.getPosition().distanceSq(loc);
 		        	if (loc != this.lastPos) {
-			        	if (dist > 2.0F && dist < maxDistance) {
+			        	if (dist < maxDistance) {
 			        		maxDistance = this.human.getPosition().distanceSq(loc);
 			        		this.home = loc;
 			        	}
@@ -104,24 +110,11 @@ public class EntityAIForage extends EntityAIBase {
     	if (this.human.getNavigator().noPath()) {
     		if (!this.wandering) {
     			if (this.human.getDistanceSq(this.home) < 16.0D) {
-    				IBlockState state = this.human.world.getBlockState(this.home);
     				Block block = this.human.world.getBlockState(this.home).getBlock();
-		    		Item item = block.getItemDropped(state, this.human.world.rand, 1);
-		    		if (item instanceof ItemFood) {
-		    			boolean learned = true;
-						Map<UUID, Memory> collective = LearnedData.get(this.human.world).memories;
-						for (UUID id : this.human.getMemories()) {
-							if (item.getUnlocalizedName().equals(collective.get(id).getBreak())) {
-								learned = false;
-								break;
-							}
-						}
-						if (learned) {
-							this.human.addMemory("BREAK", item);
-						}
-		    		}
 		    		this.human.world.destroyBlock(this.home, true);
 		    		this.human.swingArm(EnumHand.MAIN_HAND);
+		    		this.human.addMemory("WALK", block);
+		    		this.human.lastBlockBreak = block;
 		    		this.human.resetBlockTicks();
     			}
     			else {
