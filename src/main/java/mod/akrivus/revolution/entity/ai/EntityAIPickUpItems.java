@@ -12,7 +12,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	private final double movementSpeed;
 	private EntityItem item;
 	private int blockTick = 0;
-
+	private int delay = 0;
 	public EntityAIPickUpItems(EntityHuman entityIn, double movementSpeedIn) {
 		this.human = entityIn;
 		this.movementSpeed = movementSpeedIn;
@@ -30,7 +30,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 			}
 		}
  		return this.item != null && !this.item.isDead && this.human.canPickUpLoot() && this.human.canEntityBeSeen(this.item)
- 				&& this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
+ 				&& this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed) && this.human.ticksExisted % 20 == 0;
 	}
 	@Override
 	public boolean shouldContinueExecuting() {
@@ -46,9 +46,13 @@ public class EntityAIPickUpItems extends EntityAIBase {
 		if (this.blockTick > 600) {
 			this.human.addMemory("AVOID", this.item.getPosition());
 		}
+		else {
+			this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);
+		}
 	}
 	@Override
 	public void resetTask() {
 		this.item = null;
+		this.blockTick = 0;
 	}
 }

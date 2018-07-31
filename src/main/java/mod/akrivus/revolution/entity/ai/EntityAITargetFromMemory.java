@@ -10,6 +10,7 @@ import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.ai.EntityAITarget;
+import net.minecraft.entity.player.EntityPlayer;
 
 public class EntityAITargetFromMemory extends EntityAITarget {
 	public EntityHuman human;
@@ -42,6 +43,11 @@ public class EntityAITargetFromMemory extends EntityAITarget {
 	        }
 	        for (int i = 0; i < list.size(); ++i) {
 	        	EntityLivingBase entity = list.get(i);
+	        	if (entity instanceof EntityPlayer) {
+	        		if (((EntityPlayer)(entity)).capabilities.isCreativeMode) {
+	        			continue;
+	        		}
+	        	}
 	        	if (entity instanceof EntityHuman) {
 	        		continue;
 	        	}

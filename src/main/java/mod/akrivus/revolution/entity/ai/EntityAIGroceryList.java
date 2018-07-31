@@ -2,55 +2,32 @@ package mod.akrivus.revolution.entity.ai;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
-import mod.akrivus.revolution.data.LearnedData;
-import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
-import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-public class EntityAIForage extends EntityAIBase {
-	static List<Material> materials = new ArrayList<Material>();
-	static {
-		materials.add(Material.CACTUS);
-		materials.add(Material.CAKE);
-		materials.add(Material.GOURD);
-		materials.add(Material.GRASS);
-		materials.add(Material.LEAVES);
-		materials.add(Material.PLANTS);
-		materials.add(Material.VINE);
-	}
-	
+public class EntityAIGroceryList extends EntityAIBase {
     protected EntityHuman human;
     protected BlockPos lastPos;
     protected BlockPos home;
     protected boolean wandering;
     protected int delay = 0;
-    public EntityAIForage(EntityHuman human) {
+    public EntityAIGroceryList(EntityHuman human) {
         this.human = human;
         this.setMutexBits(1);
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.delay > 100) {
+    	if (this.delay > 50) {
 	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000) {
-		        Map<UUID, Memory> memories = LearnedData.get(this.human.world).memories;
-		        List<String> blocks = new ArrayList<String>();
-		        List<String> walks = new ArrayList<String>();
-		        for (UUID id : this.human.getMemories()) {
-		        	blocks.add(memories.get(id).getBreak());
-		        	walks.add(memories.get(id).getWalk());
-		        }
 		        List<BlockPos> pos = new ArrayList<BlockPos>();
 		        double maxDistance = 262144;
 		        this.lastPos = this.home;
@@ -63,16 +40,17 @@ public class EntityAIForage extends EntityAIBase {
 		        			BlockPos check = this.human.getPosition().add(x, y, z);
 		        			IBlockState state = this.human.world.getBlockState(check);
 		        			Block block = state.getBlock();
-		        			if (block != Blocks.AIR && block != Blocks.BEDROCK && !(blocks instanceof BlockLiquid)) {
-		        				if (blocks.contains(block.getUnlocalizedName())) {
-			        				pos.add(check);
-			        			}
-			        			else if (block.getHarvestTool(state) != "pickaxe"
-			        					|| materials.contains(state.getMaterial())) {
-				        			if (!walks.contains(block.getUnlocalizedName())) {
-				        				pos.add(check);
-				        			}
-			        			}
+		        			// TODO: Fix.
+		        			for (Item item : this.human.groceryList) {
+		        				try {
+			        				if (block.getUnlocalizedName().equals(Block.getBlockFromItem(item).getUnlocalizedName())
+			        				 || block.getItemDropped(state, this.human.world.rand, 1).getUnlocalizedName().equals(item.getUnlocalizedName())) {
+			        					pos.add(check);
+			        				}
+		        				}
+		        				catch (Exception e) {
+		        					continue;
+		        				}
 		        			}
 		    	        }
 			        }
@@ -91,6 +69,19 @@ public class EntityAIForage extends EntityAIBase {
 			        	if (loc != this.lastPos) {
 				        	if (dist < maxDistance) {
 				        		maxDistance = this.human.getPosition().distanceSq(loc);
+				        		IBlockState state = this.human.world.getBlockState(loc);
+				        		String tool = state.getBlock().getHarvestTool(state);
+				        		if (tool != null) {
+					        		List<ItemStack> stacks = this.human.getStackList();
+					        		for (ItemStack stack : stacks) {
+					        			if (stack.canHarvestBlock(state)) {
+					        				this.human.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
+					        			}
+					        		}
+				        		}
+				        		else {
+				        			this.human.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+				        		}
 				        		this.home = loc;
 				        	}
 			        	}

@@ -12,6 +12,7 @@ import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.data.Tribe;
 import mod.akrivus.revolution.data.TribeData;
 import mod.akrivus.revolution.entity.ai.EntityAIAvoidFromMemory;
+import mod.akrivus.revolution.entity.ai.EntityAICraftItems;
 import mod.akrivus.revolution.entity.ai.EntityAIEat;
 import mod.akrivus.revolution.entity.ai.EntityAIFindHome;
 import mod.akrivus.revolution.entity.ai.EntityAIFollowMom;
@@ -19,6 +20,8 @@ import mod.akrivus.revolution.entity.ai.EntityAIFollowOldest;
 import mod.akrivus.revolution.entity.ai.EntityAIForage;
 import mod.akrivus.revolution.entity.ai.EntityAIGoHome;
 import mod.akrivus.revolution.entity.ai.EntityAIGoToMemory;
+import mod.akrivus.revolution.entity.ai.EntityAIGroceryList;
+import mod.akrivus.revolution.entity.ai.EntityAIHaveIdeas;
 import mod.akrivus.revolution.entity.ai.EntityAIPickUpItems;
 import mod.akrivus.revolution.entity.ai.EntityAISleep;
 import mod.akrivus.revolution.entity.ai.EntityAISpeak;
@@ -42,8 +45,12 @@ import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.item.crafting.Ingredient;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.datasync.DataParameter;
@@ -52,12 +59,14 @@ import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class EntityHuman extends EntityMob implements IAnimals {
 	protected static final DataParameter<String> FIRST_NAME = EntityDataManager.createKey(EntityHuman.class, DataSerializers.STRING);
@@ -75,6 +84,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected static final DataParameter<Boolean> SLEEPING = EntityDataManager.createKey(EntityHuman.class, DataSerializers.BOOLEAN);
 	
 	public Block lastBlockBreak = Blocks.AIR;
+	public List<Item> groceryList;
 	
 	protected double immuneStrength;
 	protected double altitudeStrength;
@@ -103,16 +113,20 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.tasks.addTask(2, new EntityAIPickUpItems(this, 1.0D));
 		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 1.0D));
 		this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0F, false));
+		this.tasks.addTask(4, new EntityAICraftItems(this));
 		this.tasks.addTask(5, new EntityAIFindHome(this));
 		this.tasks.addTask(5, new EntityAIEat(this, 8));
+		this.tasks.addTask(5, new EntityAIGroceryList(this));
 		this.tasks.addTask(5, new EntityAIForage(this));
 		this.tasks.addTask(6, new EntityAIStepAroundMemory(this));
 		this.tasks.addTask(6, new EntityAIGoToMemory(this));
 		this.tasks.addTask(7, new EntityAIFollowOldest(this, 1.0D));
+		this.tasks.addTask(8, new EntityAIHaveIdeas(this));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
         this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true, new Class[0]));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.memories = new ArrayList<UUID>();
+		this.groceryList = new ArrayList<Item>();
 		this.dataManager.register(FIRST_NAME, PhonicsHelper.generateName(6, 3));
 		this.dataManager.register(TRIBE_NAME, "");
 		this.dataManager.register(AGE, 0);
@@ -248,6 +262,14 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		}
 		if (!this.world.isRemote) {
 			++this.blockTicks;
+			if (this.getAttackTarget() != null && this.getHeldItemMainhand().isEmpty() && this.ticksExisted % 20 == 0) {
+				List<ItemStack> stacks = this.getStackList();
+        		for (ItemStack stack : stacks) {
+        			if (stack.getItem() instanceof ItemSword || stack.getItem() instanceof ItemAxe) {
+        				this.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
+        			}
+        		}
+			}
 			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
 				this.setTribeName(this.getTribe().getName());
 			}
@@ -336,6 +358,12 @@ public class EntityHuman extends EntityMob implements IAnimals {
 							human.setRevengeTarget(target);
 						}
 					}
+					List<ItemStack> stacks = this.getStackList();
+	        		for (ItemStack stack : stacks) {
+	        			if (stack.getItem() instanceof ItemSword || stack.getItem() instanceof ItemAxe) {
+	        				this.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
+	        			}
+	        		}
 				}
 				else {
 					boolean learned = true;
@@ -419,23 +447,29 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
-		if (!this.world.isRemote && hand == EnumHand.MAIN_HAND) {
-			if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
-				this.setFirstName(player.getHeldItem(hand).getDisplayName());
+		if (hand == EnumHand.MAIN_HAND) {
+			if (player.isSneaking()) {
+				// TODO: This activates the trade interface.
+				player.displayGUIChest(this.inventory);
 			}
-			else if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
-				this.generate();
-			}
-			else if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
-				this.mutate();
-			}
-			else if (player.getHeldItem(hand).getItem() == Revolution.AMPLIFIER) {
-				this.setAge(48384000);
-			}
-			else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
-				player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
-				player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
-				player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
+			else if (!this.world.isRemote) {
+				if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
+					this.setFirstName(player.getHeldItem(hand).getDisplayName());
+				}
+				else if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
+					this.generate();
+				}
+				else if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
+					this.mutate();
+				}
+				else if (player.getHeldItem(hand).getItem() == Revolution.AMPLIFIER) {
+					this.setAge(48384000);
+				}
+				else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
+					player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
+					player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
+					player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
+				}
 			}
 		}
 		return super.processInteract(player, hand);
@@ -479,6 +513,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 				}
         	}
 		}
+        this.reverseEngineer(itemstack);
         if (!other.isEmpty()) {
         	itemstack.setCount(other.getCount());
         }
@@ -691,8 +726,100 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	public void addMemory(String type, Item data) {
 		this.learnMemory(LearnedData.get(this.world).addMemory(new Memory(type, data)));
 	}
+	public void addMemory(String type, String data) {
+		this.learnMemory(LearnedData.get(this.world).addMemory(new Memory(type, data)));
+	}
 	public List<UUID> getMemories() {
 		return this.memories;
+	}
+	public void reverseEngineer(ItemStack itemstack) {
+		boolean learned = true;
+		Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+		for (UUID id : this.getMemories()) {
+			if (collective.get(id).getCraft() != null) {
+				if (itemstack.getItem().getRegistryName().toString().equals(collective.get(id).getCraft().split(";")[0].split("/")[0])) {
+					learned = false;
+					break;
+				}
+			}
+		}
+		if (learned) {
+			Iterator<Map.Entry<ResourceLocation, IRecipe>> it = ForgeRegistries.RECIPES.getEntries().iterator();
+			while (it.hasNext()) {
+				IRecipe recipe = it.next().getValue();
+				if (itemstack.getItem().getRegistryName().equals(recipe.getRecipeOutput().getItem().getRegistryName())) {
+					String data = itemstack.getItem().getRegistryName() + "/" + itemstack.getCount() + ";";
+					for (Ingredient in : recipe.getIngredients()) {
+						for (ItemStack stack : in.getMatchingStacks()) {
+							data += stack.getItem().getRegistryName() + ";";
+						}
+					}
+					data.replace(";$", "");
+					this.addMemory("CRAFT", data);
+				}
+			}
+		}
+	}
+	public ItemStack canCraft(Item item) {
+		String[] recipe = new String[] { };
+		boolean learned = false;
+		Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+		for (UUID id : this.getMemories()) {
+			if (collective.get(id).getCraft() != null) {
+				recipe = collective.get(id).getCraft().split(";");
+				if (item.getRegistryName().equals(new ResourceLocation(recipe[0].split("/")[0]))) {
+					learned = true;
+					break;
+				}
+			}
+		}
+		if (learned) {
+			for (int in = 1; in < recipe.length; ++in) {
+				boolean found = false;
+				for (int slot = 0; slot < this.inventory.getSizeInventory(); ++slot) {
+					if (this.inventory.getStackInSlot(slot).getItem().getRegistryName().toString().equals(recipe[in])) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					return new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(recipe[in])));
+				}
+			}
+			return ItemStack.EMPTY;
+		}
+		return new ItemStack(Blocks.BEDROCK);
+	}
+	public void craft(Item item) {
+		String[] recipe = new String[] { };
+		boolean learned = false;
+		Map<UUID, Memory> collective = LearnedData.get(this.world).memories;
+		for (UUID id : this.getMemories()) {
+			if (collective.get(id).getCraft() != null) {
+				recipe = collective.get(id).getCraft().split(";");
+				if (item.getRegistryName().equals(new ResourceLocation(recipe[0].split("/")[0]))) {
+					learned = true;
+					break;
+				}
+			}
+		}
+		if (learned) {
+			for (int in = 1; in < recipe.length; ++in) {
+				for (int slot = 0; slot < this.inventory.getSizeInventory(); ++slot) {
+					if (this.inventory.getStackInSlot(slot).getItem().getRegistryName().toString().equals(recipe[in])) {
+						this.inventory.getStackInSlot(slot).shrink(1);
+					}
+				}
+			}
+		}
+		this.inventory.addItem(new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation(recipe[0].split("/")[0])), Integer.parseInt(recipe[0].split("/")[1])));
+	}
+	public List<ItemStack> getStackList() {
+		List<ItemStack> list = new ArrayList<ItemStack>();
+		for (int slot = 0; slot < this.inventory.getSizeInventory(); ++slot) {
+			list.add(this.inventory.getStackInSlot(slot));
+		}
+		return list;
 	}
 	public boolean isSleeping() {
 		return this.dataManager.get(SLEEPING);

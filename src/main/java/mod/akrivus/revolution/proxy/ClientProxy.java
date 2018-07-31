@@ -12,5 +12,6 @@ public class ClientProxy extends ModProxy {
 	public void preInit(FMLPreInitializationEvent event) {
 		RenderingRegistry.registerEntityRenderingHandler(EntityFemale.class, RenderFemale::new);
 		RenderingRegistry.registerEntityRenderingHandler(EntityMale.class, RenderMale::new);
+		super.preInit(event);
 	}
 }
