@@ -22,7 +22,7 @@ public class EntityAICraftItems extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	return !this.human.isSleeping() && this.human.isOldEnoughToBreed() && this.human.ticksExisted % 20 == 0;
+    	return !this.human.isSleeping() && this.human.isOldEnoughToBreed() && this.human.ticksExisted % 40 == 0;
     }
     @Override
     public boolean shouldContinueExecuting() {

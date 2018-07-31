@@ -15,7 +15,7 @@ public class EntityAIHaveIdeas extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	return !this.human.isSleeping() && this.human.isOldEnoughToBreed() && this.human.ticksExisted % 20 == 0;
+    	return !this.human.isSleeping() && this.human.isOldEnoughToBreed() && this.human.ticksExisted % 100 == 0;
     }
     @Override
     public boolean shouldContinueExecuting() {

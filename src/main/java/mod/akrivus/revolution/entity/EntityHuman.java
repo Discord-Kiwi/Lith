@@ -21,12 +21,14 @@ import mod.akrivus.revolution.entity.ai.EntityAIForage;
 import mod.akrivus.revolution.entity.ai.EntityAIGoHome;
 import mod.akrivus.revolution.entity.ai.EntityAIGoToMemory;
 import mod.akrivus.revolution.entity.ai.EntityAIGroceryList;
+import mod.akrivus.revolution.entity.ai.EntityAIHarvestFarmland;
 import mod.akrivus.revolution.entity.ai.EntityAIHaveIdeas;
 import mod.akrivus.revolution.entity.ai.EntityAIPickUpItems;
 import mod.akrivus.revolution.entity.ai.EntityAISleep;
 import mod.akrivus.revolution.entity.ai.EntityAISpeak;
 import mod.akrivus.revolution.entity.ai.EntityAIStepAroundMemory;
 import mod.akrivus.revolution.entity.ai.EntityAITargetFromMemory;
+import mod.akrivus.revolution.entity.ai.EntityAITillFarmland;
 import mod.akrivus.revolution.lang.PhonicsHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -47,6 +49,9 @@ import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemFood;
+import net.minecraft.item.ItemHoe;
+import net.minecraft.item.ItemSeedFood;
+import net.minecraft.item.ItemSeeds;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.crafting.IRecipe;
@@ -107,23 +112,25 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		this.setCanPickUpLoot(true);
 		this.tasks.addTask(0, new EntityAISleep(this));
 		this.tasks.addTask(0, new EntityAISwimming(this));
-		this.tasks.addTask(0, new EntityAISpeak(this, 2));
+		this.tasks.addTask(1, new EntityAISpeak(this, 2));
 		this.tasks.addTask(1, new EntityAIFollowMom(this, 1.0D));
 		this.tasks.addTask(2, new EntityAIGoHome(this));
-		this.tasks.addTask(2, new EntityAIPickUpItems(this, 1.0D));
-		this.tasks.addTask(3, new EntityAIAvoidFromMemory(this, 8, 1.0D));
-		this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0F, false));
-		this.tasks.addTask(4, new EntityAICraftItems(this));
-		this.tasks.addTask(5, new EntityAIFindHome(this));
-		this.tasks.addTask(5, new EntityAIEat(this, 8));
+		this.tasks.addTask(2, new EntityAIStepAroundMemory(this));
+		this.tasks.addTask(2, new EntityAIAvoidFromMemory(this, 8, 1.0D));
+		this.tasks.addTask(3, new EntityAIPickUpItems(this, 1.0D));
+		this.tasks.addTask(3, new EntityAIAttackMelee(this, 1.0F, false));
+		this.tasks.addTask(4, new EntityAIFindHome(this));
+		this.tasks.addTask(4, new EntityAIEat(this, 8));
 		this.tasks.addTask(5, new EntityAIGroceryList(this));
-		this.tasks.addTask(5, new EntityAIForage(this));
-		this.tasks.addTask(6, new EntityAIStepAroundMemory(this));
-		this.tasks.addTask(6, new EntityAIGoToMemory(this));
-		this.tasks.addTask(7, new EntityAIFollowOldest(this, 1.0D));
+		this.tasks.addTask(6, new EntityAIHarvestFarmland(this, 0.8D));
+		this.tasks.addTask(6, new EntityAITillFarmland(this, 0.8D));
+		this.tasks.addTask(7, new EntityAIForage(this));
+		this.tasks.addTask(7, new EntityAIGoToMemory(this));
+		this.tasks.addTask(8, new EntityAICraftItems(this));
 		this.tasks.addTask(8, new EntityAIHaveIdeas(this));
+		this.tasks.addTask(9, new EntityAIFollowOldest(this, 1.0D));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
-        this.targetTasks.addTask(3, new EntityAIHurtByTarget(this, true, new Class[0]));
+        this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, true, new Class[0]));
 		this.inventory = new InventoryBasic("inventory", false, 36);
 		this.memories = new ArrayList<UUID>();
 		this.groceryList = new ArrayList<Item>();
@@ -273,31 +280,41 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
 				this.setTribeName(this.getTribe().getName());
 			}
-			if (this.ticksExisted % 2400 == 0) {
-				if (this.getImmuneFactor() > 0) {
-					this.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 4800));
-				}
-				Iterator<PotionEffect> it = this.getActivePotionEffects().iterator();
-				while (it.hasNext()) {
-					if (it.next().getPotion() == MobEffects.HUNGER) {
-						this.depleteFoodLevels(1.0F + this.getImmuneFactor());
+			if (!this.isSleeping()) {
+				if (this.ticksExisted % 2400 == 0) {
+					if (this.getImmuneFactor() > 0) {
+						this.addPotionEffect(new PotionEffect(MobEffects.HUNGER, 4800));
+					}
+					Iterator<PotionEffect> it = this.getActivePotionEffects().iterator();
+					while (it.hasNext()) {
+						if (it.next().getPotion() == MobEffects.HUNGER) {
+							this.depleteFoodLevels(1.0F + this.getImmuneFactor());
+						}
+					}
+					if (this.world.rand.nextBoolean()) {
+						this.setImmuneStrength(this.getImmuneStrength() + this.getSickness());
+					}
+					if (this.foodLevels <= 0) {
+						this.attackEntityFrom(DamageSource.STARVE, 1.0F);
+						this.foodLevels = 0;
+					}
+					else if (this.foodLevels > 18.0F && this.getHealth() < 20.0F) {
+						this.heal(1.0F);
+						this.depleteFoodLevels(0.25F);
+					}
+					else {
+						this.depleteFoodLevels(0.01F);
+					}
+					this.setIsFertile(true);
+					if (this.getAttackTarget() == null && !(this.getHeldItemMainhand().getItem() instanceof ItemHoe)) {
+						List<ItemStack> stacks = this.getStackList();
+		        		for (ItemStack stack : stacks) {
+		        			if (stack.getItem() instanceof ItemHoe) {
+		        				this.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
+		        			}
+		        		}
 					}
 				}
-				if (this.world.rand.nextBoolean()) {
-					this.setImmuneStrength(this.getImmuneStrength() + this.getSickness());
-				}
-				if (this.foodLevels <= 0) {
-					this.attackEntityFrom(DamageSource.STARVE, 1.0F);
-					this.foodLevels = 0;
-				}
-				else if (this.foodLevels > 18.0F && this.getHealth() < 20.0F) {
-					this.heal(1.0F);
-					this.depleteFoodLevels(0.25F);
-				}
-				else {
-					this.depleteFoodLevels(0.01F);
-				}
-				this.setIsFertile(true);
 			}
 		}
 		this.setAge(this.getAge() + (int)(Math.ceil(2.0 * this.getAgeFactor())));
@@ -485,7 +502,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected void updateEquipmentIfNeeded(EntityItem item) {
         ItemStack itemstack = item.getItem();
         ItemStack other = this.inventory.addItem(itemstack);
-        if (itemstack.getItem() instanceof ItemFood) {
+        Item itemItem = itemstack.getItem();
+        if (itemItem instanceof ItemFood || itemItem instanceof ItemSeeds || itemItem instanceof ItemSeedFood) {
         	if (this.blockTicks > 20) {
         		boolean learned = true;
 				Map<UUID, Memory> collective = LearnedData.get(this.world).memories;

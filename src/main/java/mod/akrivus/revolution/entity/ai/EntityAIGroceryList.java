@@ -5,9 +5,11 @@ import java.util.List;
 
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
@@ -26,7 +28,7 @@ public class EntityAIGroceryList extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.delay > 50) {
+    	if (this.delay > 60) {
 	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000) {
 		        List<BlockPos> pos = new ArrayList<BlockPos>();
 		        double maxDistance = 262144;
@@ -40,17 +42,18 @@ public class EntityAIGroceryList extends EntityAIBase {
 		        			BlockPos check = this.human.getPosition().add(x, y, z);
 		        			IBlockState state = this.human.world.getBlockState(check);
 		        			Block block = state.getBlock();
-		        			// TODO: Fix.
-		        			for (Item item : this.human.groceryList) {
-		        				try {
-			        				if (block.getUnlocalizedName().equals(Block.getBlockFromItem(item).getUnlocalizedName())
-			        				 || block.getItemDropped(state, this.human.world.rand, 1).getUnlocalizedName().equals(item.getUnlocalizedName())) {
-			        					pos.add(check);
+		        			if (block != Blocks.AIR && block != Blocks.BEDROCK && !(block instanceof BlockLiquid)) {
+			        			for (Item item : this.human.groceryList) {
+			        				try {
+				        				if (block.getUnlocalizedName().equals(item.getUnlocalizedName())
+				        				 || block.getItemDropped(state, this.human.world.rand, 1).getUnlocalizedName().equals(item.getUnlocalizedName())) {
+				        					pos.add(check);
+				        				}
 			        				}
-		        				}
-		        				catch (Exception e) {
-		        					continue;
-		        				}
+			        				catch (Exception e) {
+			        					continue;
+			        				}
+			        			}
 		        			}
 		    	        }
 			        }

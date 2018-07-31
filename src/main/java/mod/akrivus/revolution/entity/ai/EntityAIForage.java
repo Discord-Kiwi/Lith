@@ -9,6 +9,7 @@ import mod.akrivus.revolution.data.LearnedData;
 import mod.akrivus.revolution.data.Memory;
 import mod.akrivus.revolution.entity.EntityHuman;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockCrops;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -65,12 +66,25 @@ public class EntityAIForage extends EntityAIBase {
 		        			Block block = state.getBlock();
 		        			if (block != Blocks.AIR && block != Blocks.BEDROCK && !(blocks instanceof BlockLiquid)) {
 		        				if (blocks.contains(block.getUnlocalizedName())) {
-			        				pos.add(check);
+			        				if (block instanceof BlockCrops) {
+			        					if (((BlockCrops)(block)).isMaxAge(state)) {
+			        						pos.add(check);
+			        					}
+			        				}
+			        				else {
+			        					pos.add(check);
+			        				}
 			        			}
-			        			else if (block.getHarvestTool(state) != "pickaxe"
-			        					|| materials.contains(state.getMaterial())) {
+			        			else if (block.getHarvestTool(state) != "pickaxe" || materials.contains(state.getMaterial())) {
 				        			if (!walks.contains(block.getUnlocalizedName())) {
-				        				pos.add(check);
+				        				if (block instanceof BlockCrops) {
+				        					if (((BlockCrops)(block)).isMaxAge(state)) {
+				        						pos.add(check);
+				        					}
+				        				}
+				        				else {
+				        					pos.add(check);
+				        				}
 				        			}
 			        			}
 		        			}
