@@ -316,6 +316,21 @@ public class EntityHuman extends EntityMob implements IAnimals {
 					}
 				}
 			}
+			else {
+				if (this.ticksExisted % 2400 == 0) {
+					List<String> values = new ArrayList<String>();
+					List<UUID> removals = new ArrayList<UUID>();
+					for (UUID memory : this.getMemories()) {
+						Memory mem = LearnedData.get(this.world).memories.get(memory);
+						if (values.contains(mem.getData())) {
+							removals.add(memory);
+						}
+					}
+					for (int i = 0; i < removals.size(); ++i) {
+						this.getMemories().remove(removals.get(i));
+					}
+				}
+			}
 		}
 		this.setAge(this.getAge() + (int)(Math.ceil(2.0 * this.getAgeFactor())));
 		if (!this.isOldEnoughToBreed() && this.getAge() < 60480000) {
@@ -480,12 +495,28 @@ public class EntityHuman extends EntityMob implements IAnimals {
 					this.mutate();
 				}
 				else if (player.getHeldItem(hand).getItem() == Revolution.AMPLIFIER) {
-					this.setAge(48384000);
+					if (this.getAge() > 48384000) {
+						List<String> values = new ArrayList<String>();
+						List<UUID> removals = new ArrayList<UUID>();
+						for (UUID memory : this.getMemories()) {
+							Memory mem = LearnedData.get(this.world).memories.get(memory);
+							if (values.contains(mem.getData())) {
+								removals.add(memory);
+							}
+						}
+						for (int i = 0; i < removals.size(); ++i) {
+							this.getMemories().remove(removals.get(i));
+						}
+					}
+					else {
+						this.setAge(48384000);
+					}
 				}
 				else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
 					player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
 					player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
 					player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
+					player.sendMessage(new TextComponentString("Has about " + this.getMemories().size() + " memories."));
 				}
 			}
 		}
@@ -766,7 +797,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			while (it.hasNext()) {
 				IRecipe recipe = it.next().getValue();
 				if (itemstack.getItem().getRegistryName().equals(recipe.getRecipeOutput().getItem().getRegistryName())) {
-					String data = itemstack.getItem().getRegistryName() + "/" + itemstack.getCount() + ";";
+					String data = recipe.getRecipeOutput().getItem().getRegistryName() + "/" + recipe.getRecipeOutput().getCount() + ";";
 					for (Ingredient in : recipe.getIngredients()) {
 						for (ItemStack stack : in.getMatchingStacks()) {
 							data += stack.getItem().getRegistryName() + ";";
@@ -806,7 +837,7 @@ public class EntityHuman extends EntityMob implements IAnimals {
 			}
 			return ItemStack.EMPTY;
 		}
-		return new ItemStack(Blocks.BEDROCK);
+		return new ItemStack(Items.CAKE);
 	}
 	public void craft(Item item) {
 		String[] recipe = new String[] { };

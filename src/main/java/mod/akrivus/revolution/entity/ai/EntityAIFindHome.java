@@ -53,16 +53,6 @@ public class EntityAIFindHome extends EntityAIBase {
     	    	}
         	}
     		this.homeValid = blocksPassed / 64.0F > 0.5F;
-    		if (this.homeValid) {
-    			this.human.getNavigator().tryMoveToXYZ(this.newPos.getX(), this.newPos.getY(), this.newPos.getZ(), 1.0D);
-    			this.human.getTribe().setHome(this.newPos, this.human.world);
-    		}
-    		else {
-    			Vec3d pos = RandomPositionGenerator.findRandomTarget(this.human, 16, 8);
-    	    	if (pos != null) {
-    	    		this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
-    	    	}
-    		}
     	}
     	else {
 	    	Vec3d pos = RandomPositionGenerator.findRandomTarget(this.human, 16, 8);
@@ -70,5 +60,15 @@ public class EntityAIFindHome extends EntityAIBase {
 	    		this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
 	    	}
     	}
+		if (this.homeValid) {
+			this.human.getNavigator().tryMoveToXYZ(this.newPos.getX(), this.newPos.getY(), this.newPos.getZ(), 1.0D);
+			this.human.getTribe().setHome(this.newPos, this.human.world);
+		}
+		else {
+			Vec3d pos = RandomPositionGenerator.findRandomTarget(this.human, 16, 8);
+	    	if (pos != null) {
+	    		this.human.getNavigator().tryMoveToXYZ(pos.x, pos.y, pos.z, 1.0D);
+	    	}
+		}
     }
 }

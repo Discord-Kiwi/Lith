@@ -23,39 +23,42 @@ public class EntityAIHaveIdeas extends EntityAIBase {
     }
     @Override
     public void startExecuting() {
-    	if (this.human.canCraft(Item.getItemFromBlock(Blocks.PLANKS)).isEmpty()) {
-    		if (this.human.canCraft(Items.STICK).isEmpty()) {
-    			if (this.human.canCraft(Items.WOODEN_AXE).isEmpty()) {
-    				if (this.human.canCraft(Items.WOODEN_HOE).isEmpty()) {
-    					if (this.human.canCraft(Items.WOODEN_PICKAXE).isEmpty()) {
-    						this.human.reverseEngineer(new ItemStack(Items.STONE_SWORD));
-    						this.human.reverseEngineer(new ItemStack(Items.STONE_PICKAXE));
-    						this.human.reverseEngineer(new ItemStack(Items.STONE_AXE));
-    						this.human.reverseEngineer(new ItemStack(Items.STONE_HOE));
+    	ItemStack attempt = this.human.canCraft(Item.getItemFromBlock(Blocks.PLANKS));
+    	if (attempt.isEmpty()) {
+    		attempt = this.human.canCraft(Items.STICK);
+    		if (attempt.isEmpty()) {
+    			attempt = this.human.canCraft(Items.WOODEN_AXE);
+    			if (attempt.isEmpty()) {
+    				attempt = this.human.canCraft(Items.WOODEN_HOE);
+    				if (attempt.isEmpty()) {
+    					attempt = this.human.canCraft(Items.WOODEN_PICKAXE);
+    					if (attempt.isEmpty()) {
+    						attempt = this.human.canCraft(Items.STONE_SWORD);
+    						if (attempt.getItem() == Items.CAKE) {
+    							this.human.reverseEngineer(new ItemStack(Items.STONE_SWORD));
+    						}
     					}
-    					else {
+    					else if (attempt.getItem() == Items.CAKE) {
     						this.human.reverseEngineer(new ItemStack(Items.WOODEN_PICKAXE));
     					}
+    					attempt = this.human.canCraft(Items.BREAD);
+    					if (attempt.getItem() == Items.CAKE) {
+    						this.human.reverseEngineer(new ItemStack(Items.BREAD));
+    					}
     				}
-    				else {
+    				else if (attempt.getItem() == Items.CAKE) {
     					this.human.reverseEngineer(new ItemStack(Items.WOODEN_HOE));
     				}
-    				if (this.human.canCraft(Items.BOW).isEmpty()) {
-    					this.human.reverseEngineer(new ItemStack(Items.ARROW));
-    				}
-    				else {
-    					this.human.reverseEngineer(new ItemStack(Items.BOW));
-    				}
     			}
-    			else {
+    			else if (attempt.getItem() == Items.CAKE) {
     				this.human.reverseEngineer(new ItemStack(Items.WOODEN_AXE));
     			}
     		}
-    		else {
+    		else if (attempt.getItem() == Items.CAKE) {
     			this.human.reverseEngineer(new ItemStack(Items.STICK));
     		}
     	}
-    	else {
+    	else if (attempt.getItem() == Items.CAKE) {
     		this.human.reverseEngineer(new ItemStack(Item.getItemFromBlock(Blocks.PLANKS)));
     	}
     }

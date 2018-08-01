@@ -29,7 +29,7 @@ public class EntityAIGroceryList extends EntityAIBase {
     @Override
     public boolean shouldExecute() {
     	if (this.delay > 60) {
-	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000) {
+	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000 && !this.human.isInWater()) {
 		        List<BlockPos> pos = new ArrayList<BlockPos>();
 		        double maxDistance = 262144;
 		        this.lastPos = this.home;
@@ -97,11 +97,12 @@ public class EntityAIGroceryList extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return (!this.human.world.isAirBlock(this.home) || this.wandering) && (this.human.getTribe().isHomeless() || this.human.getDistanceSq(this.human.getTribe().getHome()) < 262144);
+    	return !this.human.isInWater() && (!this.human.world.isAirBlock(this.home) || this.wandering) && (this.human.getTribe().isHomeless() || this.human.getDistanceSq(this.human.getTribe().getHome()) < 262144);
     }
     @Override
     public void startExecuting() {
     	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);
+    	this.delay = 0;
     }
     @Override
     public void updateTask() {
@@ -114,7 +115,6 @@ public class EntityAIGroceryList extends EntityAIBase {
 		    		this.human.addMemory("WALK", block);
 		    		this.human.lastBlockBreak = block;
 		    		this.human.resetBlockTicks();
-		        	this.delay = 0;
     			}
     			else {
     		    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);

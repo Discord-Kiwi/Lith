@@ -45,7 +45,7 @@ public class RenderMale extends RenderBiped<EntityMale> {
 	}
 	@Override
 	protected void renderEntityName(EntityMale human, double x, double y, double z, String name, double distanceSq) {
-		float size = human.getSize() * human.height;
+		float size = human.getSize() * human.height + 0.5F;
 		if (human.getAge() < 24192000) {
 			size = Math.min(1.0F, human.getSize() * (human.getAge() / 24192000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F)) + 0.5F;
 		}

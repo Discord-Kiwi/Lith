@@ -48,7 +48,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	public void updateTask() {
 		++this.blockTick;
 		if (this.blockTick > 600) {
-			this.human.addMemory("AVOID", this.item.getPosition());
+			this.item.setPosition(this.human.posX, this.human.posY, this.human.posZ);
 		}
 		else {
 			this.human.getNavigator().tryMoveToEntityLiving(this.item, this.movementSpeed);

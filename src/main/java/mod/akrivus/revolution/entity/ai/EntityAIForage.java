@@ -44,7 +44,7 @@ public class EntityAIForage extends EntityAIBase {
     @Override
     public boolean shouldExecute() {
     	if (this.delay > 100) {
-	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000) {
+	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000 && !this.human.isInWater()) {
 		        Map<UUID, Memory> memories = LearnedData.get(this.human.world).memories;
 		        List<String> blocks = new ArrayList<String>();
 		        List<String> walks = new ArrayList<String>();
@@ -117,11 +117,12 @@ public class EntityAIForage extends EntityAIBase {
     }
     @Override
     public boolean shouldContinueExecuting() {
-    	return (!this.human.world.isAirBlock(this.home) || this.wandering) && (this.human.getTribe().isHomeless() || this.human.getDistanceSq(this.human.getTribe().getHome()) < 262144);
+    	return !this.human.isInWater() && (!this.human.world.isAirBlock(this.home) || this.wandering) && (this.human.getTribe().isHomeless() || this.human.getDistanceSq(this.human.getTribe().getHome()) < 262144);
     }
     @Override
     public void startExecuting() {
     	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);
+    	this.delay = 0;
     }
     @Override
     public void updateTask() {
@@ -134,7 +135,6 @@ public class EntityAIForage extends EntityAIBase {
 		    		this.human.addMemory("WALK", block);
 		    		this.human.lastBlockBreak = block;
 		    		this.human.resetBlockTicks();
-		        	this.delay = 0;
     			}
     			else {
     		    	this.human.getNavigator().tryMoveToXYZ(this.home.getX(), this.home.getY(), this.home.getZ(), 0.6D);

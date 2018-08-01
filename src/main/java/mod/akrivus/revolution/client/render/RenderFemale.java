@@ -43,7 +43,7 @@ public class RenderFemale extends RenderBiped<EntityFemale> {
 	}
 	@Override
 	protected void renderEntityName(EntityFemale human, double x, double y, double z, String name, double distanceSq) {
-		float size = human.getSize() * human.height * 0.9F;
+		float size = human.getSize() * human.height * 0.9F + 0.5F;
 		if (human.getAge() < 18144000) {
 			size = Math.min(1.0F, human.getSize() * (human.getAge() / 18144000.0F * (human.getSize() / 3.0F)) + (human.getSize() / 4.0F)) * 0.9F + 0.5F;
 		}
