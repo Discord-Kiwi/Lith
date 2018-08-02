@@ -1,9 +1,11 @@
 package mod.akrivus.revolution.entity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
 import mod.akrivus.revolution.Revolution;
@@ -35,6 +37,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
+import net.minecraft.entity.IMerchant;
+import net.minecraft.entity.INpc;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
@@ -42,7 +46,6 @@ import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
-import net.minecraft.entity.passive.IAnimals;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -71,12 +74,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.village.MerchantRecipe;
+import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class EntityHuman extends EntityMob implements IAnimals {
+public class EntityHuman extends EntityMob implements INpc, IMerchant {
 	protected static final DataParameter<String> FIRST_NAME = EntityDataManager.createKey(EntityHuman.class, DataSerializers.STRING);
 	protected static final DataParameter<String> TRIBE_NAME = EntityDataManager.createKey(EntityHuman.class, DataSerializers.STRING);
 	protected static final DataParameter<Integer> CLOTHES = EntityDataManager.createKey(EntityHuman.class, DataSerializers.VARINT);
@@ -109,6 +114,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	protected UUID tribe;
 	protected InventoryBasic inventory;
 	protected List<UUID> memories;
+	
+	protected EntityPlayer buyingPlayer;
 	
 	public EntityHuman(World world) {
 		super(world);
@@ -478,9 +485,10 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (hand == EnumHand.MAIN_HAND) {
-			if (player.isSneaking()) {
-				// TODO: This activates the trade interface.
-				player.displayGUIChest(this.inventory);
+			if (player.isSneaking() && !player.inventory.isEmpty() && !this.inventory.isEmpty()) {
+				this.setCustomNameTag(this.getFirstName());
+				player.displayVillagerTradeGui(this);
+				this.setCustomer(player);
 			}
 			else if (!this.world.isRemote) {
 				if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
@@ -587,6 +595,60 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	@Override
 	public boolean getAlwaysRenderNameTag() {
 		return true;
+	}
+	@Override
+	public void setCustomer(EntityPlayer player) {
+        this.buyingPlayer = player;
+    }
+	@Override
+    public EntityPlayer getCustomer() {
+        return this.buyingPlayer;
+    }
+    @Override
+    public MerchantRecipeList getRecipes(EntityPlayer player) {
+        MerchantRecipeList list = new MerchantRecipeList();
+        List<ItemStack> inventory = new ArrayList<ItemStack>();
+        for (int i = 0; i < player.inventory.getSizeInventory(); ++i) {
+        	if (!player.inventory.getStackInSlot(i).isEmpty()) {
+        		inventory.add(player.inventory.getStackInSlot(i));
+        	}
+        }
+        Collections.shuffle(inventory, new Random(player.hashCode()));
+        int index = 0;
+        for (ItemStack stack : this.getStackList()) {
+        	if (!stack.isEmpty() && index < inventory.size()) {
+        		list.add(new MerchantRecipe(inventory.get(index), stack));
+        		++index;
+        	}
+        }
+        return list;
+    }
+	@Override
+	public void setRecipes(MerchantRecipeList recipeList) {
+		// Recipe lists are dynamic.
+	}
+	@Override
+	public void verifySellingItem(ItemStack stack) {
+    	System.out.println(stack);
+    }
+	@Override
+	public void useRecipe(MerchantRecipe recipe) {
+		for (int i = 0; i < this.inventory.getSizeInventory(); ++i) {
+			if (recipe.getItemToSell().isItemEqual(this.inventory.getStackInSlot(i))) {
+				this.inventory.removeStackFromSlot(i);
+				this.inventory.addItem(recipe.getItemToBuy());
+				this.reverseEngineer(recipe.getItemToBuy());
+				break;
+			}
+		}
+	}
+	@Override
+	public World getWorld() {
+		return this.world;
+	}
+	@Override
+	public BlockPos getPos() {
+		return this.getPosition();
 	}
 	public void setStats(double strength, double stamina, double speed) {
 		this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D * Math.min(18.0D, strength) + 1.0D);

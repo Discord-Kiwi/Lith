@@ -21,7 +21,7 @@ public class EntityAIBreedInter extends EntityAIBase {
         this.setMutexBits(1);
     }
     public boolean shouldExecute() {
-        if (this.male.isOldEnoughToBreed() && this.male.isAroused() && this.male.ticksExisted % 100 == 0) {
+        if (this.male.isOldEnoughToBreed() && this.male.isAroused() && this.male.ticksExisted % 240 == 0) {
 		    List<EntityFemale> list = this.male.world.<EntityFemale>getEntitiesWithinAABB(EntityFemale.class, this.male.getEntityBoundingBox().grow(8.0D, 4.0D, 8.0D));
 		    double maxDistance = Double.MAX_VALUE;
 		    this.candidate = null;
@@ -47,12 +47,14 @@ public class EntityAIBreedInter extends EntityAIBase {
     public void updateTask() {
         this.male.getNavigator().tryMoveToEntityLiving(this.candidate, this.moveSpeed);
         if (this.male.getDistanceSq(this.candidate) < 2.0D) {
-        	EntityHuman child = this.candidate.createChild(this.male);
-    		this.candidate.depleteFoodLevels(this.candidate.getFoodLevels());
-        	this.candidate.setSickness(this.male.getImmuneStrength());
-    		this.candidate.world.spawnEntity(child);
-        	this.candidate.setIsFertile(false);
-        	this.candidate.dropItem(Revolution.MAN_MEAT, 1);
+        	if (this.candidate.isFertile()) {
+	        	EntityHuman child = this.candidate.createChild(this.male);
+	    		this.candidate.depleteFoodLevels(this.candidate.getFoodLevels());
+	        	this.candidate.setSickness(this.male.getImmuneStrength());
+	    		this.candidate.world.spawnEntity(child);
+	        	this.candidate.setIsFertile(false);
+	        	this.candidate.dropItem(Revolution.MAN_MEAT, 1);
+        	}
         	List<UUID> femaleMemory = new ArrayList<UUID>();
         	femaleMemory.addAll(this.male.getMemories());
         	femaleMemory.removeAll(this.candidate.getMemories());

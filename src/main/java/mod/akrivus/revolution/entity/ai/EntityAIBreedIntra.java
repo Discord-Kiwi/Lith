@@ -17,7 +17,7 @@ public class EntityAIBreedIntra extends EntityAIBase {
         this.setMutexBits(1);
     }
     public boolean shouldExecute() {
-        if (this.female.isOldEnoughToBreed() && this.female.isAroused() && this.female.ticksExisted % 100 == 0) {
+        if (this.female.isOldEnoughToBreed() && this.female.isAroused() && this.female.ticksExisted % 2400 == 0) {
 		    List<EntityMale> list = this.female.world.<EntityMale>getEntitiesWithinAABB(EntityMale.class, this.female.getEntityBoundingBox().grow(8.0D, 4.0D, 8.0D));
 		    double maxDistance = 0;
 		    this.candidate = null;

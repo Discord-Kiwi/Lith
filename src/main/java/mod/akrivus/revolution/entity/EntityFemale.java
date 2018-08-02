@@ -45,7 +45,11 @@ public class EntityFemale extends EntityHuman {
 	}
 	@Override
 	public boolean isAroused() {
-		return this.fertilityFactor == this.world.getCurrentMoonPhaseFactor() && this.isFertile();
+		return true;
+	}
+	@Override
+	public boolean isFertile() {
+		return super.isFertile() && this.fertilityFactor == this.world.getCurrentMoonPhaseFactor();
 	}
 	public float getFertilityFactor() {
 		return this.fertilityFactor;
