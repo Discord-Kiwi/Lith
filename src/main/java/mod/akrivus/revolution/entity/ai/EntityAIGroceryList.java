@@ -24,72 +24,74 @@ public class EntityAIGroceryList extends EntityAIBase {
     protected int delay = 0;
     public EntityAIGroceryList(EntityHuman human) {
         this.human = human;
-        this.setMutexBits(1);
+        this.setMutexBits(5);
     }
     @Override
     public boolean shouldExecute() {
-    	if (this.delay > 60) {
+    	if (this.delay > 40) {
 	    	if (!this.human.isSleeping() && (this.human.world.getWorldTime() % 24000) < 12000 && !this.human.isInWater()) {
-		        List<BlockPos> pos = new ArrayList<BlockPos>();
-		        double maxDistance = 262144;
-		        this.lastPos = this.home;
-		        for (int x = -8; x < 8; ++x) {
-		        	for (int y = -4; y < 4; ++y) {
-		        		for (int z = -8; z < 8; ++z) {
-		        			if (x == 0 && y < 0 && z == 0) {
-		        				continue;
-		        			}
-		        			BlockPos check = this.human.getPosition().add(x, y, z);
-		        			IBlockState state = this.human.world.getBlockState(check);
-		        			Block block = state.getBlock();
-		        			if (block != Blocks.AIR && block != Blocks.BEDROCK && !(block instanceof BlockLiquid)) {
-			        			for (Item item : this.human.groceryList) {
-			        				try {
-				        				if (block.getUnlocalizedName().equals(item.getUnlocalizedName())
-				        				 || block.getItemDropped(state, this.human.world.rand, 1).getUnlocalizedName().equals(item.getUnlocalizedName())) {
-				        					pos.add(check);
-				        				}
-			        				}
-			        				catch (Exception e) {
-			        					continue;
-			        				}
+		        if (this.human.groceryList.size() > 0) {
+		    		List<BlockPos> pos = new ArrayList<BlockPos>();
+			        double maxDistance = 262144;
+			        this.lastPos = this.home;
+			        for (int x = -8; x < 8; ++x) {
+			        	for (int y = -4; y < 4; ++y) {
+			        		for (int z = -8; z < 8; ++z) {
+			        			if (x == 0 && y < 0 && z == 0) {
+			        				continue;
 			        			}
-		        			}
-		    	        }
+			        			BlockPos check = this.human.getPosition().add(x, y, z);
+			        			IBlockState state = this.human.world.getBlockState(check);
+			        			Block block = state.getBlock();
+			        			if (block != Blocks.AIR && block != Blocks.BEDROCK && !(block instanceof BlockLiquid)) {
+				        			for (Item item : this.human.groceryList) {
+				        				try {
+					        				if (block.getUnlocalizedName().equals(item.getUnlocalizedName())
+					        				 || block.getItemDropped(state, this.human.world.rand, 1).getUnlocalizedName().equals(item.getUnlocalizedName())) {
+					        					pos.add(check);
+					        				}
+				        				}
+				        				catch (Exception e) {
+				        					continue;
+				        				}
+				        			}
+			        			}
+			    	        }
+				        }
 			        }
-		        }
-		        if (pos.isEmpty()) {
-		        	Vec3d vec = RandomPositionGenerator.findRandomTarget(this.human, 16, 4);
-		        	if (vec == null) {
-		        		return false;
-		        	}
-		        	this.home = new BlockPos(vec);
-		        	this.wandering = true;
-		        }
-		        else {
-			        for (BlockPos loc : pos) {
-			        	double dist = this.human.getPosition().distanceSq(loc);
-			        	if (loc != this.lastPos) {
-				        	if (dist < maxDistance) {
-				        		maxDistance = this.human.getPosition().distanceSq(loc);
-				        		IBlockState state = this.human.world.getBlockState(loc);
-				        		String tool = state.getBlock().getHarvestTool(state);
-				        		if (tool != null) {
-					        		List<ItemStack> stacks = this.human.getStackList();
-					        		for (ItemStack stack : stacks) {
-					        			if (stack.canHarvestBlock(state)) {
-					        				this.human.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
-					        			}
-					        		}
-				        		}
-				        		else {
-				        			this.human.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
-				        		}
-				        		this.home = loc;
-				        	}
+			        if (pos.isEmpty()) {
+			        	Vec3d vec = RandomPositionGenerator.findRandomTarget(this.human, 16, 4);
+			        	if (vec == null) {
+			        		return false;
 			        	}
+			        	this.home = new BlockPos(vec);
+			        	this.wandering = true;
 			        }
-		        }
+			        else {
+				        for (BlockPos loc : pos) {
+				        	double dist = this.human.getPosition().distanceSq(loc);
+				        	if (loc != this.lastPos) {
+					        	if (dist < maxDistance) {
+					        		maxDistance = this.human.getPosition().distanceSq(loc);
+					        		IBlockState state = this.human.world.getBlockState(loc);
+					        		String tool = state.getBlock().getHarvestTool(state);
+					        		if (tool != null) {
+						        		List<ItemStack> stacks = this.human.getStackList();
+						        		for (ItemStack stack : stacks) {
+						        			if (stack.canHarvestBlock(state)) {
+						        				this.human.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
+						        			}
+						        		}
+					        		}
+					        		else {
+					        			this.human.setHeldItem(EnumHand.MAIN_HAND, ItemStack.EMPTY);
+					        		}
+					        		this.home = loc;
+					        	}
+				        	}
+				        }
+			        }
+		    	}
 	    	}
     	}
     	++this.delay;

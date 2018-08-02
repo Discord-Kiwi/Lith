@@ -20,7 +20,7 @@ public class EntityAIEat extends EntityAIBase {
     }
     @Override
     public boolean shouldExecute() {
-    	if (!this.entity.isSleeping() && this.entity.getFoodLevels() < 12) {
+    	if (!this.entity.isSleeping() && this.entity.getFoodLevels() < 12 && this.entity.ticksExisted % 240 == 0) {
     		if (this.entity.getAttackTarget() == null) {
     			ItemStack foodStack = this.hasFood(this.entity);
     			if (!foodStack.isEmpty()) {

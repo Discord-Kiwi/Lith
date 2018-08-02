@@ -18,7 +18,7 @@ public class EntityAICraftItems extends EntityAIBase {
     protected EntityHuman human;
     public EntityAICraftItems(EntityHuman human) {
         this.human = human;
-        //this.setMutexBits(5);
+        this.setMutexBits(4);
     }
     @Override
     public boolean shouldExecute() {

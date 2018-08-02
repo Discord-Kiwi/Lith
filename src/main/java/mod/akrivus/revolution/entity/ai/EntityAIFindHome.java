@@ -29,18 +29,20 @@ public class EntityAIFindHome extends EntityAIBase {
     }
     @Override
     public void startExecuting() {
-    	for (int x = -8; x < 8; ++x) {
-    		for (int y = -1; y < 1; ++y) {
-    			for (int z = -8; z < 8; ++z) {
-    				BlockPos pos = this.human.getPosition().add(new BlockPos(x, y, z));
-    	    		if (this.human.world.isAirBlock(pos.up(2)) && this.human.world.isAirBlock(pos.up(1)) && !this.human.world.isAirBlock(pos)) {
-    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 65536) {
-    	    				this.homeFound = true;
-    	    				this.newPos = pos;
-    	    			}
-    	    		}
-    	    	}
-        	}
+    	if (!this.homeFound) { 
+	    	for (int x = -8; x < 8; ++x) {
+	    		for (int y = -1; y < 1; ++y) {
+	    			for (int z = -8; z < 8; ++z) {
+	    				BlockPos pos = this.human.getPosition().add(new BlockPos(x, y, z));
+	    	    		if (this.human.world.isAirBlock(pos.up(2)) && this.human.world.isAirBlock(pos.up(1)) && !this.human.world.isAirBlock(pos)) {
+	    	    			if (!this.human.world.canSeeSky(pos.up()) && pos.distanceSq(this.human.getTribe().getOldHome()) > 65536) {
+	    	    				this.homeFound = true;
+	    	    				this.newPos = pos;
+	    	    			}
+	    	    		}
+	    	    	}
+	        	}
+	    	}
     	}
     	if (this.homeFound) { 
     		int blocksPassed = 0;

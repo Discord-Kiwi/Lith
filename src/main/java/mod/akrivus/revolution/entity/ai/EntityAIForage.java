@@ -39,7 +39,7 @@ public class EntityAIForage extends EntityAIBase {
     protected int delay = 0;
     public EntityAIForage(EntityHuman human) {
         this.human = human;
-        this.setMutexBits(1);
+        this.setMutexBits(5);
     }
     @Override
     public boolean shouldExecute() {

@@ -16,7 +16,7 @@ public class EntityAIPickUpItems extends EntityAIBase {
 	public EntityAIPickUpItems(EntityHuman entityIn, double movementSpeedIn) {
 		this.human = entityIn;
 		this.movementSpeed = movementSpeedIn;
-		this.setMutexBits(1);
+		this.setMutexBits(2);
 	}
 	@Override
 	public boolean shouldExecute() {

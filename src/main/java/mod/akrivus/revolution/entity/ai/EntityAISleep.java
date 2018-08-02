@@ -7,7 +7,7 @@ public class EntityAISleep extends EntityAIBase {
 	protected EntityHuman human;
     public EntityAISleep(EntityHuman human) {
         this.human = human;
-        this.setMutexBits(5);
+        this.setMutexBits(4);
     }
     @Override
     public boolean shouldExecute() {

@@ -15,7 +15,7 @@ public class EntityAISpeak extends EntityAIBase {
     public EntityAISpeak(EntityHuman entity, float maxDistance) {
         this.entity = entity;
         this.maxDistance = maxDistance;
-        //this.setMutexBits(4);
+        this.setMutexBits(4);
     }
     @Override
     public boolean shouldExecute() {

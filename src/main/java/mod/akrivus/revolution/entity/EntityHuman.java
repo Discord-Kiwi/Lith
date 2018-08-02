@@ -32,12 +32,14 @@ import mod.akrivus.revolution.entity.ai.EntityAITillFarmland;
 import mod.akrivus.revolution.lang.PhonicsHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIHurtByTarget;
 import net.minecraft.entity.ai.EntityAISwimming;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.IAnimals;
@@ -45,6 +47,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.init.MobEffects;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAxe;
@@ -269,13 +272,8 @@ public class EntityHuman extends EntityMob implements IAnimals {
 		}
 		if (!this.world.isRemote) {
 			++this.blockTicks;
-			if (this.getAttackTarget() != null && this.getHeldItemMainhand().isEmpty() && this.ticksExisted % 20 == 0) {
-				List<ItemStack> stacks = this.getStackList();
-        		for (ItemStack stack : stacks) {
-        			if (stack.getItem() instanceof ItemSword || stack.getItem() instanceof ItemAxe) {
-        				this.setHeldItem(EnumHand.MAIN_HAND, stack.copy());
-        			}
-        		}
+			if (this.getAttackTarget() != null && this.ticksExisted % 100 == 0) {
+				equipBest();
 			}
 			if (this.getTribeName().isEmpty() && this.getTribe() != null) {
 				this.setTribeName(this.getTribe().getName());
@@ -780,6 +778,37 @@ public class EntityHuman extends EntityMob implements IAnimals {
 	}
 	public List<UUID> getMemories() {
 		return this.memories;
+	}
+	public void equipBest() {
+		List<ItemStack> stacks = this.getStackList();
+		Iterator<ItemStack> hit = this.getEquipmentAndArmor().iterator();
+		while (hit.hasNext()) {
+			ItemStack best = hit.next();
+			EntityEquipmentSlot slot = EntityLiving.getSlotForItemStack(best);
+			for (ItemStack stack : stacks) {
+				Item item = stack.getItem(); Item held = best.getItem();
+				double amount1 = -1; double amount2 = -1;
+				Iterator<AttributeModifier> it;
+				it = item.getItemAttributeModifiers(slot).get(slot == EntityEquipmentSlot.MAINHAND ? "generic.attackDamage" : "generic.armor").iterator();
+				while (it.hasNext()) {
+					AttributeModifier mod = it.next();
+					if (mod.getAmount() > amount1) {
+						amount1 = mod.getAmount();
+					}
+				}
+				it = held.getItemAttributeModifiers(slot).get(slot == EntityEquipmentSlot.MAINHAND ? "generic.attackDamage" : "generic.armor").iterator();
+				while (it.hasNext()) {
+					AttributeModifier mod = it.next();
+					if (mod.getAmount() > amount2) {
+						amount2 = mod.getAmount();
+					}
+				}
+				if (amount1 > amount2) {
+					best = stack;
+				}
+			}
+			this.setItemStackToSlot(slot, best);
+		}
 	}
 	public void reverseEngineer(ItemStack itemstack) {
 		boolean learned = true;
