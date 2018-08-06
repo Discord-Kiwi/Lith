@@ -29,6 +29,7 @@ import mod.akrivus.revolution.entity.ai.EntityAIPickUpItems;
 import mod.akrivus.revolution.entity.ai.EntityAISleep;
 import mod.akrivus.revolution.entity.ai.EntityAISpeak;
 import mod.akrivus.revolution.entity.ai.EntityAIStepAroundMemory;
+import mod.akrivus.revolution.entity.ai.EntityAITargetAsChild;
 import mod.akrivus.revolution.entity.ai.EntityAITargetFromMemory;
 import mod.akrivus.revolution.entity.ai.EntityAITillFarmland;
 import mod.akrivus.revolution.lang.PhonicsHelper;
@@ -128,9 +129,9 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
 		this.tasks.addTask(2, new EntityAIStepAroundMemory(this));
 		this.tasks.addTask(2, new EntityAIAvoidFromMemory(this, 8, 1.0D));
 		this.tasks.addTask(3, new EntityAIPickUpItems(this, 1.0D));
-		this.tasks.addTask(3, new EntityAIAttackMelee(this, 1.0F, false));
+		this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0F, false));
 		this.tasks.addTask(4, new EntityAIFindHome(this));
-		this.tasks.addTask(4, new EntityAIEat(this, 8));
+		this.tasks.addTask(5, new EntityAIEat(this, 8));
 		this.tasks.addTask(5, new EntityAIGroceryList(this));
 		this.tasks.addTask(6, new EntityAIHarvestFarmland(this, 0.8D));
 		this.tasks.addTask(6, new EntityAITillFarmland(this, 0.8D));
@@ -139,6 +140,7 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
 		this.tasks.addTask(8, new EntityAICraftItems(this));
 		this.tasks.addTask(8, new EntityAIHaveIdeas(this));
 		this.tasks.addTask(9, new EntityAIFollowOldest(this, 1.0D));
+		this.targetTasks.addTask(0, new EntityAITargetAsChild(this));
 		this.targetTasks.addTask(1, new EntityAITargetFromMemory(this));
         this.targetTasks.addTask(2, new EntityAIHurtByTarget(this, true, new Class[0]));
 		this.inventory = new InventoryBasic("inventory", false, 36);
@@ -486,12 +488,13 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (hand == EnumHand.MAIN_HAND) {
 			if (!this.world.isRemote) {
-				if (player.isSneaking() && !player.inventory.isEmpty() && !this.inventory.isEmpty()) {
-					this.setCustomNameTag(this.getFirstName());
-					this.setCustomer(player);
-					player.displayVillagerTradeGui(this);
-				}
-				else {
+				//TODO
+				//if (player.isSneaking() && !player.inventory.isEmpty() && !this.inventory.isEmpty()) {
+				//	this.setCustomNameTag(this.getFirstName());
+				//	this.setCustomer(player);
+				//	player.displayVillagerTradeGui(this);
+				//}
+				//else {
 					if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
 						this.setFirstName(player.getHeldItem(hand).getDisplayName());
 					}
@@ -525,7 +528,7 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
 						player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
 						player.sendMessage(new TextComponentString("Has about " + this.getMemories().size() + " memories."));
 					}
-				}
+				//}
 			}
 		}
 		return super.processInteract(player, hand);
