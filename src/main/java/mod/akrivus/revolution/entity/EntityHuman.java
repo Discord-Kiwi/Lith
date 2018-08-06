@@ -485,44 +485,46 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
 	@Override
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (hand == EnumHand.MAIN_HAND) {
-			if (player.isSneaking() && !player.inventory.isEmpty() && !this.inventory.isEmpty()) {
-				this.setCustomNameTag(this.getFirstName());
-				player.displayVillagerTradeGui(this);
-				this.setCustomer(player);
-			}
-			else if (!this.world.isRemote) {
-				if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
-					this.setFirstName(player.getHeldItem(hand).getDisplayName());
+			if (!this.world.isRemote) {
+				if (player.isSneaking() && !player.inventory.isEmpty() && !this.inventory.isEmpty()) {
+					this.setCustomNameTag(this.getFirstName());
+					this.setCustomer(player);
+					player.displayVillagerTradeGui(this);
 				}
-				else if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
-					this.generate();
-				}
-				else if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
-					this.mutate();
-				}
-				else if (player.getHeldItem(hand).getItem() == Revolution.AMPLIFIER) {
-					if (this.getAge() > 48384000) {
-						List<String> values = new ArrayList<String>();
-						List<UUID> removals = new ArrayList<UUID>();
-						for (UUID memory : this.getMemories()) {
-							Memory mem = LearnedData.get(this.world).memories.get(memory);
-							if (values.contains(mem.getData())) {
-								removals.add(memory);
+				else {
+					if (player.getHeldItem(hand).getItem() == Items.NAME_TAG) {
+						this.setFirstName(player.getHeldItem(hand).getDisplayName());
+					}
+					else if (player.getHeldItem(hand).getItem() == Revolution.GENERATOR) {
+						this.generate();
+					}
+					else if (player.getHeldItem(hand).getItem() == Revolution.MUTATOR) {
+						this.mutate();
+					}
+					else if (player.getHeldItem(hand).getItem() == Revolution.AMPLIFIER) {
+						if (this.getAge() > 48384000) {
+							List<String> values = new ArrayList<String>();
+							List<UUID> removals = new ArrayList<UUID>();
+							for (UUID memory : this.getMemories()) {
+								Memory mem = LearnedData.get(this.world).memories.get(memory);
+								if (values.contains(mem.getData())) {
+									removals.add(memory);
+								}
+							}
+							for (int i = 0; i < removals.size(); ++i) {
+								this.getMemories().remove(removals.get(i));
 							}
 						}
-						for (int i = 0; i < removals.size(); ++i) {
-							this.getMemories().remove(removals.get(i));
+						else {
+							this.setAge(48384000);
 						}
 					}
-					else {
-						this.setAge(48384000);
+					else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
+						player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
+						player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
+						player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
+						player.sendMessage(new TextComponentString("Has about " + this.getMemories().size() + " memories."));
 					}
-				}
-				else if (player.getHeldItem(hand).getItem() != Revolution.FERTILIZER) {
-					player.sendMessage(new TextComponentString(this.getFirstName() + " of the " + this.getTribeName() + " tribe:"));
-					player.sendMessage(new TextComponentString("Approximately " + (int)(this.getAge() / 2016000.0F) + " years old."));
-					player.sendMessage(new TextComponentString((this.getImmuneFactor() > 0 ? "Sick, " : "Not sick, ") + (int)((this.getHealth() / this.getMaxHealth()) * 100) + "% healthy, " + (int)((this.foodLevels / 20) * 100) + "% full."));
-					player.sendMessage(new TextComponentString("Has about " + this.getMemories().size() + " memories."));
 				}
 			}
 		}
@@ -604,6 +606,14 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
     public EntityPlayer getCustomer() {
         return this.buyingPlayer;
     }
+	@Override
+	public void setRecipes(MerchantRecipeList recipeList) {
+		Iterator<MerchantRecipe> it = recipeList.iterator();
+		while (it.hasNext()) {
+			MerchantRecipe recipe = it.next();
+			this.getInventory().addItem(recipe.getItemToSell());
+		}
+	}
     @Override
     public MerchantRecipeList getRecipes(EntityPlayer player) {
         MerchantRecipeList list = new MerchantRecipeList();
@@ -617,22 +627,19 @@ public class EntityHuman extends EntityMob implements INpc, IMerchant {
         int index = 0;
         for (ItemStack stack : this.getStackList()) {
         	if (!stack.isEmpty() && index < inventory.size()) {
-        		list.add(new MerchantRecipe(inventory.get(index), stack));
+        		list.add(new MerchantRecipe(inventory.get(index), ItemStack.EMPTY, stack, 0, 1));
         		++index;
         	}
         }
         return list;
     }
 	@Override
-	public void setRecipes(MerchantRecipeList recipeList) {
-		// Recipe lists are dynamic.
-	}
-	@Override
 	public void verifySellingItem(ItemStack stack) {
-    	System.out.println(stack);
+		this.getLookHelper().setLookPositionWithEntity(this.buyingPlayer, 30.0F, 30.0F);
     }
 	@Override
 	public void useRecipe(MerchantRecipe recipe) {
+		recipe.incrementToolUses();
 		for (int i = 0; i < this.inventory.getSizeInventory(); ++i) {
 			if (recipe.getItemToSell().isItemEqual(this.inventory.getStackInSlot(i))) {
 				this.inventory.removeStackFromSlot(i);
