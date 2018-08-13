@@ -1,0 +1,10 @@
+entity.female.name=Женщина
+entity.male.name=Мужчина
+
+item.man_meat.name=Мясо Человека
+item.cooked_man_meat.name=Приготовленное Мясо Человека
+item.spawner.name=Жезл Спауна
+item.mutator.name=Жезл Мутатотор
+item.generator.name=Жезл Генерации
+item.fertilizer.name=Жезл Удобрения
+item.amplifier.name=Жезл Развития
